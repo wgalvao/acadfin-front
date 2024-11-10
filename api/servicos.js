@@ -1,6 +1,4 @@
-// utils/apiClient.js
-
-const BASE_URL = "http://localhost:8000/api/servicos/";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "servicos/";
 
 // Função para obter todos os servicos
 export const fetchServicos = async () => {
