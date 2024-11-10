@@ -1,36 +1,35 @@
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "centro-de-custos/";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "funcoes/";
 
-// Função para obter todos os CentroCustos
-export const fetchCentroCustos = async () => {
+// Função para obter todas as funções
+export const fetchFuncoes = async () => {
   try {
     const response = await fetch(BASE_URL);
     if (!response.ok) {
-      throw new Error("Erro ao buscar CentroCusto");
+      throw new Error("Erro ao buscar funções");
     }
     return await response.json();
   } catch (error) {
-    console.error("Erro ao buscar CentroCusto:", error);
+    console.error("Erro ao buscar funções:", error);
     throw error;
   }
 };
 
-// Função para obter um funcionário pelo ID
-export const fetchCentroCustoById = async (id) => {
+// Função para obter uma função pelo ID
+export const fetchFuncaoById = async (id) => {
   try {
     const response = await fetch(`${BASE_URL}${id}/`);
     console.log(response);
     if (!response.ok) {
-      throw new Error("Erro ao buscar funcionário");
+      throw new Error("Erro ao buscar função");
     }
-    // return await response.json();
     return response.json();
   } catch (error) {
-    console.error("Erro ao buscar funcionário:", error);
+    console.error("Erro ao buscar função:", error);
     throw error;
   }
 };
 
-export const createCentroCusto = async (data) => {
+export const createFuncao = async (data) => {
   console.log(data);
   const response = await fetch(`${BASE_URL}`, {
     method: "POST",
@@ -38,13 +37,13 @@ export const createCentroCusto = async (data) => {
     body: JSON.stringify(data),
   });
   if (!response.ok) {
-    throw new Error("Failed to create CentroCusto");
+    throw new Error("Failed to create Função");
   }
   return response.json();
 };
 
-// Função para atualizar um funcionário existente
-export const updateCentroCusto = async (id, data) => {
+// Função para atualizar uma função existente
+export const updateFuncao = async (id, data) => {
   try {
     const response = await fetch(`${BASE_URL}${id}/`, {
       method: "PUT",
@@ -54,29 +53,29 @@ export const updateCentroCusto = async (id, data) => {
       body: JSON.stringify(data),
     });
     if (!response.ok) {
-      throw new Error("Erro ao atualizar funcionário");
+      throw new Error("Erro ao atualizar função");
     }
     return await response.json();
   } catch (error) {
-    console.error("Erro ao atualizar funcionário:", error);
+    console.error("Erro ao atualizar função:", error);
     throw error;
   }
 };
 
-export const deleteCentroCusto = async (id) => {
+export const deleteFuncao = async (id) => {
   try {
     const response = await fetch(`${BASE_URL}${id}/`, {
       method: "DELETE",
     });
 
     if (!response.ok) {
-      throw new Error("Erro ao deletar funcionário");
+      throw new Error("Erro ao deletar função");
     }
 
     // Retorna um valor de confirmação simples se não houver corpo de resposta
     return response.status === 204 ? { success: true } : await response.json();
   } catch (error) {
-    console.error("Erro ao deletar funcionário:", error);
+    console.error("Erro ao deletar função:", error);
     throw error;
   }
 };

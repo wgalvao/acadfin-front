@@ -1,6 +1,4 @@
-// utils/apiClient.js
-
-const BASE_URL = "http://localhost:8000/api/funcionarios/";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "funcionarios/";
 
 // Função para obter todos os funcionários
 export const fetchFuncionarios = async () => {

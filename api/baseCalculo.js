@@ -1,36 +1,35 @@
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "centro-de-custos/";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "base-calculo/";
 
-// Função para obter todos os CentroCustos
-export const fetchCentroCustos = async () => {
+// Função para obter todas as bases de cálculo
+export const fetchBaseCalculos = async () => {
   try {
     const response = await fetch(BASE_URL);
     if (!response.ok) {
-      throw new Error("Erro ao buscar CentroCusto");
+      throw new Error("Erro ao buscar bases de cálculo");
     }
     return await response.json();
   } catch (error) {
-    console.error("Erro ao buscar CentroCusto:", error);
+    console.error("Erro ao buscar bases de cálculo:", error);
     throw error;
   }
 };
 
-// Função para obter um funcionário pelo ID
-export const fetchCentroCustoById = async (id) => {
+// Função para obter uma base de cálculo pelo ID
+export const fetchBaseCalculoById = async (id) => {
   try {
     const response = await fetch(`${BASE_URL}${id}/`);
     console.log(response);
     if (!response.ok) {
-      throw new Error("Erro ao buscar funcionário");
+      throw new Error("Erro ao buscar base de cálculo");
     }
-    // return await response.json();
     return response.json();
   } catch (error) {
-    console.error("Erro ao buscar funcionário:", error);
+    console.error("Erro ao buscar base de cálculo:", error);
     throw error;
   }
 };
 
-export const createCentroCusto = async (data) => {
+export const createBaseCalculo = async (data) => {
   console.log(data);
   const response = await fetch(`${BASE_URL}`, {
     method: "POST",
@@ -38,13 +37,13 @@ export const createCentroCusto = async (data) => {
     body: JSON.stringify(data),
   });
   if (!response.ok) {
-    throw new Error("Failed to create CentroCusto");
+    throw new Error("Failed to create Base de Cálculo");
   }
   return response.json();
 };
 
-// Função para atualizar um funcionário existente
-export const updateCentroCusto = async (id, data) => {
+// Função para atualizar uma base de cálculo existente
+export const updateBaseCalculo = async (id, data) => {
   try {
     const response = await fetch(`${BASE_URL}${id}/`, {
       method: "PUT",
@@ -54,29 +53,29 @@ export const updateCentroCusto = async (id, data) => {
       body: JSON.stringify(data),
     });
     if (!response.ok) {
-      throw new Error("Erro ao atualizar funcionário");
+      throw new Error("Erro ao atualizar base de cálculo");
     }
     return await response.json();
   } catch (error) {
-    console.error("Erro ao atualizar funcionário:", error);
+    console.error("Erro ao atualizar base de cálculo:", error);
     throw error;
   }
 };
 
-export const deleteCentroCusto = async (id) => {
+export const deleteBaseCalculo = async (id) => {
   try {
     const response = await fetch(`${BASE_URL}${id}/`, {
       method: "DELETE",
     });
 
     if (!response.ok) {
-      throw new Error("Erro ao deletar funcionário");
+      throw new Error("Erro ao deletar base de cálculo");
     }
 
     // Retorna um valor de confirmação simples se não houver corpo de resposta
     return response.status === 204 ? { success: true } : await response.json();
   } catch (error) {
-    console.error("Erro ao deletar funcionário:", error);
+    console.error("Erro ao deletar base de cálculo:", error);
     throw error;
   }
 };
