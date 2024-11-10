@@ -44,7 +44,7 @@ export const DashboardMenu = [
       { id: uuid(), link: "/pages/empresas", name: "Empresas" },
       { id: uuid(), link: "/pages/sindicatos", name: "Sindicato" },
       { id: uuid(), link: "/pages/servicos", name: "Serviços" },
-      { id: uuid(), link: "/pages/pricing", name: "Centro de custos" },
+      { id: uuid(), link: "/pages/centro-custo", name: "Centro de custos" },
       { id: uuid(), link: "/pages/pricing", name: "Cargos" },
       { id: uuid(), link: "/pages/pricing", name: "Função" },
       { id: uuid(), link: "/pages/pricing", name: "Jornada" },
