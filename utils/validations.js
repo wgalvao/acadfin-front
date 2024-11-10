@@ -79,3 +79,12 @@ export const validationSchemaCentroCusto = z.object({
     message: "Código é obrigatório",
   }),
 });
+
+export const validationSchemaCargo = z.object({
+  salario: z.string().min(3, {
+    message: "Salário é obrigatório",
+  }),
+  cargo: z.string().min(3, {
+    message: "Descrição é obrigatória",
+  }),
+});
