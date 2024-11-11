@@ -150,3 +150,21 @@ export const validationSchemaConta = z.object({
     message: "Nome é obrigatório e deve ter pelo menos 3 caracteres",
   }),
 });
+
+export const validationSchemaAliquota = z.object({
+  tipo_imposto: z.string().min(3, {
+    tipo: "Nome é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+  percentual: z.string().refine((value) => !isNaN(parseFloat(value)), {
+    message: "Saldo deve ser um número válido",
+  }),
+  data_inicio: z.string().refine((value) => !isNaN(Date.parse(value)), {
+    message: "Data inválida",
+  }),
+  data_fim: z.string().refine((value) => !isNaN(Date.parse(value)), {
+    message: "Data inválida",
+  }),
+  descricao: z.string().min(3, {
+    message: "Nome é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+});
