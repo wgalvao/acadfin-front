@@ -138,3 +138,15 @@ export const validationSchemaFornecedor = z.object({
   }),
   observacao: z.string().optional(),
 });
+
+export const validationSchemaConta = z.object({
+  conta: z.string().min(3, {
+    message: "Nome é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+  saldo: z.string().refine((value) => !isNaN(parseFloat(value)), {
+    message: "Saldo deve ser um número válido",
+  }),
+  descricao: z.string().min(3, {
+    message: "Nome é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+});
