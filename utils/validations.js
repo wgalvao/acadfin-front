@@ -94,3 +94,21 @@ export const validationSchemaFuncao = z.object({
     message: "Nome é obrigatório",
   }),
 });
+
+export const validationSchemaBaseCalculo = z.object({
+  nome: z.string().min(3, {
+    message: "Nome é obrigatório",
+  }),
+  // percentual: z.number().min(0, {
+  //   message: "Percentual é obrigatório",
+  // }),
+  // valor_minimo: z.number().min(0, {
+  //   message: "Valor mínimo é obrigatório",
+  // }),
+  // valor_maximo: z.number().min(0, {
+  //   message: "Valor máximo é obrigatório",
+  // }),
+  // tipo: z.string().min(3, {
+  //   message: "Tipo é obrigatório",
+  // }),
+});

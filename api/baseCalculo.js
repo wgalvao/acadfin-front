@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "base-calculo/";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "base-calculos/";
 
 // Função para obter todas as bases de cálculo
 export const fetchBaseCalculos = async () => {
