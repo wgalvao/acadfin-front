@@ -128,3 +128,13 @@ export const validationSchemaCliente = z.object({
   }),
   observacao: z.string().optional(),
 });
+
+export const validationSchemaFornecedor = z.object({
+  // pessoa: z.string().min(0, {
+  //   message: "Pessoa é obrigatório e deve ter pelo menos 3 caracteres",
+  // }),
+  desde: z.string().refine((value) => !isNaN(Date.parse(value)), {
+    message: "Data inválida",
+  }),
+  observacao: z.string().optional(),
+});

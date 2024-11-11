@@ -57,12 +57,12 @@ export const DashboardMenu = [
     title: "Cadastro Fiscal",
     icon: "layers",
     children: [
-      { id: uuid(), link: "/pages/profile", name: "Fornecedores" },
+      { id: uuid(), link: "/pages/fornecedores", name: "Fornecedores" },
       { id: uuid(), link: "/pages/clientes", name: "Clientes" },
-      { id: uuid(), link: "/pages/pricing", name: "Contas" },
-      { id: uuid(), link: "/pages/pricing", name: "Acumuladores" },
-      { id: uuid(), link: "/pages/pricing", name: "CFOP" },
-      { id: uuid(), link: "/pages/pricing", name: "Alíquotas" },
+      { id: uuid(), link: "/pages/contas", name: "Contas" },
+      { id: uuid(), link: "/pages/acumuladores", name: "Acumuladores" },
+      { id: uuid(), link: "/pages/cfop", name: "CFOP" },
+      { id: uuid(), link: "/pages/aliquotas", name: "Alíquotas" },
     ],
   },
   {
