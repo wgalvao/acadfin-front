@@ -42,6 +42,16 @@ export const createFuncao = async (data) => {
   return response.json();
 };
 
+// Função para buscar empresas na API
+const fetchEmpresas = async () => {
+  try {
+    const response = await axios.get("http://localhost:8000/api/empresas/");
+    setEmpresas(response.data);
+  } catch (error) {
+    console.error("Erro ao buscar empresas:", error);
+  }
+};
+
 // Função para atualizar uma função existente
 export const updateFuncao = async (id, data) => {
   try {

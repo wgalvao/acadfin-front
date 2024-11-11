@@ -88,3 +88,9 @@ export const validationSchemaCargo = z.object({
     message: "Descrição é obrigatória",
   }),
 });
+
+export const validationSchemaFuncao = z.object({
+  nome: z.string().min(3, {
+    message: "Nome é obrigatório",
+  }),
+});
