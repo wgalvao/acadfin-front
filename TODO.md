@@ -1,13 +1,9 @@
 # TODO
 
-- [ * ] Botão loading em login
-- [ * ] implementar logout melhorzinho
-- [ ] usar .env
-
 ## Observações
 
 - O tamanho do campo definido em models.py afeta bastante os erros na hora de salvar
--
+- Cadastro de clientes já traz o campo claendário correntamente
 
 ## Desafios
 

@@ -58,7 +58,7 @@ export const DashboardMenu = [
     icon: "layers",
     children: [
       { id: uuid(), link: "/pages/profile", name: "Fornecedores" },
-      { id: uuid(), link: "/pages/billing", name: "Clientes" },
+      { id: uuid(), link: "/pages/clientes", name: "Clientes" },
       { id: uuid(), link: "/pages/pricing", name: "Contas" },
       { id: uuid(), link: "/pages/pricing", name: "Acumuladores" },
       { id: uuid(), link: "/pages/pricing", name: "CFOP" },

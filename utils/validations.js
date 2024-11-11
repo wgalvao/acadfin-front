@@ -112,3 +112,19 @@ export const validationSchemaBaseCalculo = z.object({
   //   message: "Tipo é obrigatório",
   // }),
 });
+
+export const validationSchemaCliente = z.object({
+  nome: z.string().min(3, {
+    message: "Nome é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+  desde: z.string().refine((value) => !isNaN(Date.parse(value)), {
+    message: "Data inválida",
+  }),
+  taxa_desconto: z.string().refine((value) => !isNaN(parseFloat(value)), {
+    message: "Taxa de desconto deve ser um número válido",
+  }),
+  limite_credito: z.string().refine((value) => !isNaN(parseFloat(value)), {
+    message: "Limite de crédito deve ser um número válido",
+  }),
+  observacao: z.string().optional(),
+});
