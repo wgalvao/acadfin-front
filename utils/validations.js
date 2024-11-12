@@ -168,3 +168,16 @@ export const validationSchemaAliquota = z.object({
     message: "Nome é obrigatório e deve ter pelo menos 3 caracteres",
   }),
 });
+
+export const validationSchemaAcumulador = z.object({
+  acumulador: z.string().min(3, {
+    message: "Acumulador é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+  tipo: z.string().min(3, {
+    message: "Tipo é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+  valor: z.string().refine((value) => !isNaN(parseFloat(value)), {
+    message: "Taxa de desconto deve ser um número válido",
+  }),
+  descricao: z.string().optional(),
+});
