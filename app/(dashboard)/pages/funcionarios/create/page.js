@@ -1,22 +1,47 @@
-// create.js
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import InputMask from "react-input-mask"; // Importa a biblioteca de máscara
 import { z } from "zod";
 import { Col, Row, Container, Form, Button, Card } from "react-bootstrap";
 import { Save, BookMarked } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // import sub components
 import { PricingCard, PageHeading, FeatureLeftTopIcon } from "widgets";
-import { createFuncionario } from "@/api/funcionarios";
+import {
+  createFuncionario,
+  updateFuncionario,
+  fetchFuncionarioById,
+} from "@/api/funcionarios";
 import estados from "data/Estados";
 import { validationSchema } from "utils/validations";
 import ErrorMessage from "sub-components/ErrorMessage";
 
+// Função auxiliar para formatar a data de YYYY-MM-DD para DD/MM/YYYY
+const formatDateToDisplay = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+// Função auxiliar para formatar a data de DD/MM/YYYY para YYYY-MM-DD
+const formatDateToSubmit = (dateString) => {
+  if (!dateString) return "";
+  const [day, month, year] = dateString.split("/");
+  return `${year}-${month}-${day}`;
+};
+
 const Funcionarios = () => {
+  const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
+  const [isEditing, setIsEditing] = useState(!!id);
+  const [loading, setLoading] = useState(false); // State for loading button
 
   const [formData, setFormData] = useState({
     cep: "",
@@ -43,6 +68,24 @@ const Funcionarios = () => {
 
   const [errors, setErrors] = useState({});
 
+  useEffect(() => {
+    if (id) {
+      fetchFuncionarioById(id)
+        .then((data) => {
+          // Formata a data de nascimento para DD/MM/YYYY
+          const formattedData = {
+            ...data,
+            data_nasc: new Date(data.data_nasc).toISOString().split("T")[0],
+          };
+          setFormData(formattedData);
+          setIsEditing(true); // Set to true since we are editing
+        })
+        .catch((error) =>
+          console.error("Erro ao carregar dados do funcionário:", error)
+        );
+    }
+  }, [id]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({}); // Limpar erros antes de validar
@@ -51,62 +94,39 @@ const Funcionarios = () => {
     if (!result.success) {
       const errorMessages = result.error.flatten().fieldErrors;
       setErrors(errorMessages); // Atualiza o estado de erros com as mensagens
-      console.log(errorMessages);
-      alert("Verifique os erros no formulário.");
+      toast.error("Verifique os erros no formulário.", { autoClose: 2000 });
     } else {
-      // // Lógica para enviar os dados ao backend
+      setLoading(true);
       try {
-        // Converte a data de nascimento para o formato YYYY-MM-DD
         const formattedData = {
           ...formData,
-          data_nasc: formData.data_nasc.split("/").reverse().join("-"), // Convertendo dd-mm-yyyy para yyyy-mm-dd
         };
-        // Enviar dados para o backend via fetch
-        const response = await createFuncionario(formattedData);
-        // const response = await fetch(
-        //   "http://localhost:8000/api/funcionarios/",
-        //   {
-        //     method: "POST",
-        //     headers: {
-        //       "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify(formattedData),
-        //   }
-        // );
-        console.log("pag " + response);
-        if (response.ok) {
-          alert("Formulário enviado com sucesso!");
-          setFormData({
-            cep: "",
-            cpf: "",
-            telefone: "",
-            celular: "",
-            estado: "",
-            nome: "",
-            estado_civil: "",
-            data_nasc: "",
-            idade: "",
-            sexo: "",
-            escolaridade: "",
-            naturalidade: "",
-            pis: "",
-            identidade: "",
-            ctps: "",
-            serie: "",
-            endereco: "",
-            bairro: "",
-            cidade: "",
-            email: "",
-          });
+
+        const response = await (isEditing
+          ? updateFuncionario(id, formattedData)
+          : createFuncionario(formattedData));
+
+        if (response) {
+          toast.success(
+            `Funcionário ${
+              isEditing ? "atualizado" : "cadastrado"
+            } com sucesso!`,
+            { autoClose: 2000 }
+          );
+          await new Promise((resolve) => setTimeout(resolve, 2000));
           router.push("/pages/funcionarios");
         } else {
-          const errorData = await response.json();
-          console.log(errorData);
-          alert("Erro ao enviar o formulário: " + errorData.message);
+          toast.error("Ocorreu um erro ao tentar enviar o formulário.", {
+            autoClose: 2000,
+          });
         }
       } catch (error) {
         console.error("Erro ao enviar formulário:", error);
-        alert("Ocorreu um erro ao tentar enviar o formulário.");
+        toast.error(
+          `Ocorreu um erro ao tentar enviar o formulário: ${error.message}`
+        );
+      } finally {
+        setLoading(false); // Set loading state to false
       }
     }
   };
@@ -125,7 +145,9 @@ const Funcionarios = () => {
         <Card.Body>
           <Card.Title as="h3">
             <BookMarked />
-            Cadastro de funcionários
+            {isEditing
+              ? " Edição de funcionários"
+              : " Cadastro de funcionários"}
           </Card.Title>
           <div className="py-2">
             <Form onSubmit={handleSubmit}>
@@ -170,26 +192,15 @@ const Funcionarios = () => {
                 {/* // Dentro do JSX do componente */}
                 <Col md={4}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Data de Nascimento</Form.Label>
-
-                    <InputMask
-                      mask="99/99/9999" // Máscara para dd-mm-yyyy
-                      name="data_nasc" // Ajuste o nome do campo conforme o estado
-                      placeholder="Nascimento"
+                    <Form.Label>Data de Início</Form.Label>
+                    <Form.Control
+                      type="date"
+                      name="data_nasc"
                       value={formData.data_nasc}
                       onChange={handleChange}
-                    >
-                      {(inputProps) => (
-                        <Form.Control
-                          {...inputProps}
-                          type="text" // Definimos o tipo como texto para o InputMask
-                          isInvalid={!!errors.data_nasc} // Exibe erro se houver
-                        />
-                      )}
-                    </InputMask>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.data_nasc}
-                    </Form.Control.Feedback>
+                      isInvalid={!!errors.data_nasc}
+                    />
+                    <ErrorMessage message={errors.data_nasc} />
                   </Form.Group>
                 </Col>
                 <Col md={4}>
@@ -506,14 +517,31 @@ const Funcionarios = () => {
                   variant="success"
                   size="lg"
                   type="submit"
+                  disabled={loading} // Disable button when loading
                 >
-                  <Save /> Salvar informações
+                  {loading ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>{" "}
+                      Carregando...
+                    </>
+                  ) : (
+                    <>
+                      <Save /> {isEditing ? "Atualizar" : "Salvar"} informações
+                    </>
+                  )}
                 </Button>
               </div>
             </Form>
           </div>
         </Card.Body>
       </Card>
+
+      {/* ToastContainer for displaying notifications */}
+      <ToastContainer autoClose={2000} />
     </Container>
   );
 };

@@ -18,6 +18,8 @@ export const validationSchema = z.object({
     message: "CEP inválido, formato esperado: 00000-000",
   }),
   estado: z.string().min(4, "Estado é obrigatório"),
+
+  estado_civil: z.string().min(4, "Estado civil é obrigatório"),
   nome: z.string().min(4, "Nome completo é obrigatório"),
   data_nasc: z.string().min(4, "Data de nascimento é obrigatória"),
 });
