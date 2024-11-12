@@ -61,7 +61,7 @@ export const DashboardMenu = [
       { id: uuid(), link: "/pages/clientes", name: "Clientes" },
       { id: uuid(), link: "/pages/contas", name: "Contas" },
       { id: uuid(), link: "/pages/acumuladores", name: "Acumuladores" },
-      { id: uuid(), link: "/pages/cfop", name: "CFOP" },
+      { id: uuid(), link: "/pages/cfops", name: "CFOP" },
       { id: uuid(), link: "/pages/aliquotas", name: "Alíquotas" },
     ],
   },

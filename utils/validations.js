@@ -181,3 +181,13 @@ export const validationSchemaAcumulador = z.object({
   }),
   descricao: z.string().optional(),
 });
+
+export const validationSchemaCfop = z.object({
+  codigo: z.string().min(3, {
+    message: "Código é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+  tipo_operacao: z.string().min(3, {
+    message: "Tipo é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+  descricao: z.string().optional(),
+});
