@@ -71,7 +71,7 @@ export const DashboardMenu = [
     icon: "layers",
     children: [
       { id: uuid(), link: "/pages/plano-contas", name: "Plano de contas" },
-      { id: uuid(), link: "/pages/pricing", name: "Histórico" },
+      // { id: uuid(), link: "/pages/pricing", name: "Histórico" },
     ],
   },
   {

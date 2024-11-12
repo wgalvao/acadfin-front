@@ -65,7 +65,7 @@ const Fornecedores = () => {
 
   return (
     <Fragment>
-      <div className="bg-primary pt-8 pb-8"></div>
+      <div className="bg-dark pt-8 pb-8"></div>
       <Container fluid className="mt-n10 px-6">
         <Row>
           <Col lg={12} md={12} xs={12}>
