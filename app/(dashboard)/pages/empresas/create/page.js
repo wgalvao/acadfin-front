@@ -1,25 +1,27 @@
-// createCompany.js
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import InputMask from "react-input-mask";
+import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import InputMask from "react-input-mask"; // Importa a biblioteca de máscara
 import { Col, Row, Container, Form, Button, Card } from "react-bootstrap";
 import { Save, Briefcase } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // import sub components
 import { PageHeading } from "widgets";
-import { createEmpresa } from "@/api/empresas";
+import { createEmpresa, updateEmpresa, fetchEmpresaById } from "@/api/empresas";
 import estados from "data/Estados";
 import { validationSchemaEmpresa } from "utils/validations";
 import ErrorMessage from "sub-components/ErrorMessage";
 import { useAuthState } from "@/lib/auth";
 
 const Empresas = () => {
+  const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
-  const { getUserData } = useAuthState();
-  // const logOut = useLogOut();
-  const session = getUserData();
+  const [isEditing, setIsEditing] = useState(!!id);
+  const [loading, setLoading] = useState(false); // State for loading button
+
   const [formData, setFormData] = useState({
     cnpj: "",
     nome_razao: "",
@@ -36,51 +38,54 @@ const Empresas = () => {
 
   const [errors, setErrors] = useState({});
 
+  useEffect(() => {
+    if (id) {
+      fetchEmpresaById(id)
+        .then((data) => {
+          setFormData(data);
+          setIsEditing(true); // Set to true since we are editing
+        })
+        .catch((error) =>
+          console.error("Erro ao carregar dados da empresa:", error)
+        );
+    }
+  }, [id]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({});
-
+    setErrors({}); // Limpar erros antes de validar
     const result = validationSchemaEmpresa.safeParse(formData);
 
     if (!result.success) {
       const errorMessages = result.error.flatten().fieldErrors;
-      setErrors(errorMessages);
-      alert("Verifique os erros no formulário.");
+      setErrors(errorMessages); // Atualiza o estado de erros com as mensagens
+      toast.error("Verifique os erros no formulário.", { autoClose: 2000 });
     } else {
+      setLoading(true);
       try {
-        const response = await createEmpresa(formData);
-        // const response = await fetch("http://localhost:8000/api/empresas/", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: JSON.stringify(formData),
-        // });
-        // console.log(response);
+        const response = await (isEditing
+          ? updateEmpresa(id, formData)
+          : createEmpresa(formData));
 
-        if (response.ok) {
-          alert("Empresa cadastrada com sucesso!");
-          setFormData({
-            cnpj: "",
-            nome_razao: "",
-            nome_fantasia: "",
-            endereco: "",
-            bairro: "",
-            cidade: "",
-            estado: "",
-            cep: "",
-            telefone: "",
-            email: "",
-            inscricao_estadual: "",
-          });
+        if (response) {
+          toast.success(
+            `Empresa ${isEditing ? "atualizada" : "cadastrada"} com sucesso!`,
+            { autoClose: 2000 }
+          );
+          await new Promise((resolve) => setTimeout(resolve, 2000));
           router.push("/pages/empresas");
         } else {
-          const errorData = await response.json();
-          alert("Erro ao enviar o formulário: " + errorData.message);
+          toast.error("Ocorreu um erro ao tentar enviar o formulário.", {
+            autoClose: 2000,
+          });
         }
       } catch (error) {
         console.error("Erro ao enviar formulário:", error);
-        alert("Ocorreu um erro ao tentar enviar o formulário.");
+        toast.error(
+          `Ocorreu um erro ao tentar enviar o formulário: ${error.message}`
+        );
+      } finally {
+        setLoading(false); // Set loading state to false
       }
     }
   };
@@ -98,7 +103,7 @@ const Empresas = () => {
         <Card.Body>
           <Card.Title as="h3">
             <Briefcase />
-            Cadastro de empresas
+            {isEditing ? "Edição de empresas" : "Cadastro de empresas"}
           </Card.Title>
           <div className="py-2">
             <Form onSubmit={handleSubmit}>
@@ -302,14 +307,31 @@ const Empresas = () => {
                   variant="success"
                   size="lg"
                   type="submit"
+                  disabled={loading} // Disable button when loading
                 >
-                  <Save /> Salvar informações
+                  {loading ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>{" "}
+                      Carregando...
+                    </>
+                  ) : (
+                    <>
+                      <Save /> {isEditing ? "Atualizar" : "Salvar"} informações
+                    </>
+                  )}
                 </Button>
               </div>
             </Form>
           </div>
         </Card.Body>
       </Card>
+
+      {/* ToastContainer for displaying notifications */}
+      <ToastContainer autoClose={2000} />
     </Container>
   );
 };
