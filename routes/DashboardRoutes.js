@@ -70,7 +70,7 @@ export const DashboardMenu = [
     title: "Cadastro Contábil",
     icon: "layers",
     children: [
-      { id: uuid(), link: "/pages/profile", name: "Plano de contas" },
+      { id: uuid(), link: "/pages/plano-contas", name: "Plano de contas" },
       { id: uuid(), link: "/pages/pricing", name: "Histórico" },
     ],
   },

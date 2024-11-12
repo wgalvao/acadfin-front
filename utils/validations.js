@@ -191,3 +191,22 @@ export const validationSchemaCfop = z.object({
   }),
   descricao: z.string().optional(),
 });
+
+export const validationSchemaPlanoConta = z.object({
+  codigo_contas: z.string().min(3, {
+    message: "Código é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+  nome_conta: z.string().min(3, {
+    message: "Nome da conta é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+  tipo_conta: z.string().min(3, {
+    message: "Nível é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+  nivel: z.string().min(3, {
+    message: "Nível é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+  conta_pai: z.string().min(3, {
+    message: "Conta pai é obrigatório e deve ter pelo menos 3 caracteres",
+  }),
+  descricao: z.string().optional(),
+});
