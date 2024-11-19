@@ -1,4 +1,3 @@
-// empresas.js
 "use client";
 import { Fragment, useState, useEffect } from "react";
 import Link from "next/link";
@@ -11,15 +10,20 @@ import {
   Button,
   Modal,
 } from "react-bootstrap";
-import { Trash } from "lucide-react";
+import { Trash, UserPen } from "lucide-react";
 
 import { fetchEmpresas, deleteEmpresa } from "@/api/empresas";
+
+import Header from "sub-components/crud/Header";
+import ModalDelete from "sub-components/crud/ModalDelete";
 
 const Empresas = () => {
   const [empresas, setEmpresas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedEmpresa, setSelectedEmpresa] = useState(null);
   const [empresaId, setEmpresaId] = useState(null);
 
   const loadEmpresas = async () => {
@@ -40,17 +44,22 @@ const Empresas = () => {
 
   const handleDeleteClick = (id) => {
     setEmpresaId(id);
-    setShowModal(true);
+    setShowDeleteModal(true);
   };
 
   const confirmDelete = async () => {
     try {
       await deleteEmpresa(empresaId);
-      setShowModal(false);
+      setShowDeleteModal(false);
       loadEmpresas(); // Recarrega a lista após a exclusão
     } catch (error) {
       console.error("Erro ao deletar empresa:", error);
     }
+  };
+
+  const handleDetailsClick = (empresa) => {
+    setSelectedEmpresa(empresa);
+    setShowDetailsModal(true);
   };
 
   return (
@@ -59,22 +68,12 @@ const Empresas = () => {
       <Container fluid className="mt-n10 px-6">
         <Row>
           <Col lg={12} md={12} xs={12}>
-            <div className="d-flex justify-content-between align-items-center">
-              <div className="mb-2 mb-lg-0">
-                <h3 className="mb-0 text-white">Empresas</h3>
-              </div>
-              <div>
-                <Link href="/pages/empresas/create" className="btn btn-white">
-                  Adicionar nova empresa
-                </Link>
-              </div>
-            </div>
+            <Header title="Empresas" addLink="/pages/empresas/create" />
           </Col>
         </Row>
-
         <Card className="mt-6" style={{ width: "auto" }}>
           <Card.Body>
-            <Card.Title>Listagem de empresas</Card.Title>
+            <Card.Title>Listagem de Empresas</Card.Title>
 
             {loading ? (
               <p>Carregando...</p>
@@ -100,22 +99,30 @@ const Empresas = () => {
                 </thead>
                 <tbody>
                   {empresas.map((empresa) => (
-                    <tr key={empresa.cod_empresa}>
-                      <td>{empresa.nome_razao}</td>
+                    <tr key={empresa.id}>
+                      <td>
+                        <span
+                          style={{
+                            cursor: "pointer",
+                            textDecoration: "underline",
+                          }}
+                          onClick={() => handleDetailsClick(empresa)}
+                        >
+                          {empresa.nome_razao}
+                        </span>
+                      </td>
                       <td>{empresa.cnpj}</td>
                       <td>{empresa.telefone}</td>
                       <td>
-                        <Link
-                          href={`/pages/empresas/${empresa.cod_empresa}/edit/`}
-                        >
+                        <Link href={`/pages/empresas/${empresa.id}/edit/`}>
                           <Button variant="outline-warning" size="sm">
-                            Alterar
+                            <UserPen />
                           </Button>
                         </Link>
                         <Button
-                          variant="danger"
+                          variant="outline-danger"
                           size="sm"
-                          onClick={() => handleDeleteClick(empresa.cod_empresa)}
+                          onClick={() => handleDeleteClick(empresa.id)}
                           className="ms-2"
                         >
                           <Trash />
@@ -128,26 +135,90 @@ const Empresas = () => {
             )}
           </Card.Body>
         </Card>
+        <ModalDelete
+          show={showDeleteModal}
+          onHide={() => setShowDeleteModal(false)}
+          onConfirm={confirmDelete}
+          title="Confirmação de Exclusão"
+          body="Tem certeza de que deseja excluir esta empresa?"
+        />
 
-        {/* Modal de Confirmação */}
-        <Modal show={showModal} onHide={() => setShowModal(false)}>
-          <Modal.Header closeButton>
-            <Modal.Title>Confirmação de Exclusão</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            Tem certeza de que deseja excluir esta empresa?
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowModal(false)}>
-              Cancelar
-            </Button>
-            <Button variant="danger" onClick={confirmDelete}>
-              Confirmar
-            </Button>
-          </Modal.Footer>
-        </Modal>
+        {/* Modal de Detalhes da Empresa */}
+        <ModalDetails
+          show={showDetailsModal}
+          onHide={() => setShowDetailsModal(false)}
+          empresa={selectedEmpresa}
+        />
       </Container>
     </Fragment>
+  );
+};
+
+const ModalDetails = ({ show, onHide, empresa }) => {
+  return (
+    <Modal show={show} onHide={onHide} size="lg">
+      <Modal.Header closeButton>
+        <Modal.Title>Detalhes da Empresa</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {empresa ? (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "10px",
+            }}
+          >
+            <div>
+              <p>
+                <strong>Razão Social:</strong> {empresa.nome_razao}
+              </p>
+              <p>
+                <strong>CNPJ:</strong> {empresa.cnpj}
+              </p>
+              <p>
+                <strong>Telefone:</strong> {empresa.telefone}
+              </p>
+              <p>
+                <strong>Email:</strong> {empresa.email}
+              </p>
+              <p>
+                <strong>Endereço:</strong> {empresa.endereco}
+              </p>
+              <p>
+                <strong>Bairro:</strong> {empresa.bairro}
+              </p>
+            </div>
+            <div>
+              <p>
+                <strong>Cidade:</strong> {empresa.cidade}
+              </p>
+              <p>
+                <strong>Estado:</strong> {empresa.estado}
+              </p>
+              <p>
+                <strong>CEP:</strong> {empresa.cep}
+              </p>
+              <p>
+                <strong>Data de Fundação:</strong>{" "}
+                {new Date(empresa.data_fundacao).toLocaleDateString()}
+              </p>
+              <p>
+                <strong>Inscrição Estadual:</strong>{" "}
+                {empresa.inscricao_estadual}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <p>Nenhuma empresa selecionada.</p>
+        )}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={onHide}>
+          Fechar
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 };
 

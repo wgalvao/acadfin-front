@@ -35,6 +35,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# pnpm
+pnpm-lock.yaml
+
 # Logs
 logs
 *.log
@@ -61,3 +64,5 @@ coverage/
 
 # Next.js exported pages
 .export/
+
+*.sh

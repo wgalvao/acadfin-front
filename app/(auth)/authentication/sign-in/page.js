@@ -87,11 +87,11 @@ const SignIn = () => {
               <Form onSubmit={handleSubmit}>
                 {/* Username */}
                 <Form.Group className="mb-3" controlId="username">
-                  <Form.Label>Usuário ou email</Form.Label>
+                  <Form.Label>Usuário</Form.Label>
                   <Form.Control
                     type="text"
                     name="username"
-                    placeholder="Digite seu usuário ou email"
+                    placeholder="Digite seu usuário"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required

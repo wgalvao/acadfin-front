@@ -18,8 +18,8 @@ const SignUp = () => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    password: "",
-    confirmPassword: "",
+    password1: "",
+    password2: "",
     firstName: "",
     lastName: "",
     terms: false,
@@ -39,41 +39,36 @@ const SignUp = () => {
     setErrors({});
 
     try {
-      // Validações locais primeiro
       const validationErrors = validateForm(formData);
       if (Object.keys(validationErrors).length > 0) {
         setErrors(validationErrors);
+        setIsLoading(false);
         return;
       }
 
       // Tenta registrar o usuário
       const response = await registerUser(formData);
 
-      // Se bem sucedido, redireciona para a dashboard ou página inicial
+      // Check if the response contains errors
+      if (response && response.errors) {
+        const backendErrors = {};
+        for (const [field, messages] of Object.entries(response.errors)) {
+          backendErrors[field] = messages[0]; // Assuming the first message is the most relevant
+        }
+        setErrors(backendErrors);
+        setIsLoading(false);
+        return;
+      }
+
+      // If successful, redirect to the home page
       router.push("/");
       console.log("era pra ter ido");
     } catch (error) {
-      // Trata erros de registro
-      if (error.message.includes(":")) {
-        // Processa erros do backend em formato de objeto
-        const errorLines = error.message.split("\n");
-        const newErrors = {};
-
-        errorLines.forEach((line) => {
-          const [field, message] = line.split(": ");
-          newErrors[field] = message;
-        });
-
-        setErrors(newErrors);
-      } else {
-        // Erro geral
-        setErrors({ general: error.message });
-      }
-    } finally {
+      // Handle unexpected errors
+      setErrors({ general: error.message });
       setIsLoading(false);
     }
   };
-
   const validateForm = (data) => {
     const newErrors = {};
 
@@ -85,12 +80,12 @@ const SignUp = () => {
       newErrors.email = "E-mail é obrigatório";
     }
 
-    if (!data.password) {
-      newErrors.password = "Senha é obrigatória";
+    if (!data.password1) {
+      newErrors.password1 = "Senha é obrigatória";
     }
 
-    if (data.password !== data.confirmPassword) {
-      newErrors.confirmPassword = "As senhas não coincidem";
+    if (data.password1 !== data.password2) {
+      newErrors.password2 = "As senhas não coincidem";
     }
 
     // if (!data.terms) {
@@ -120,6 +115,10 @@ const SignUp = () => {
             </div>
             {hasMounted && (
               <Form onSubmit={handleSubmit}>
+                {errors.general && (
+                  <div className="mb-3 text-danger">{errors.general}</div>
+                )}
+
                 <Form.Group className="mb-3" controlId="username">
                   <Form.Label>Nome de usuário</Form.Label>
                   <Form.Control
@@ -150,18 +149,18 @@ const SignUp = () => {
                   </Form.Control.Feedback>
                 </Form.Group>
 
-                <Form.Group className="mb-3" controlId="password">
+                <Form.Group className="mb-3" controlId="password1">
                   <Form.Label>Senha</Form.Label>
                   <Form.Control
                     type="password"
-                    name="password"
+                    name="password1"
                     placeholder="**************"
-                    value={formData.password}
+                    value={formData.password1}
                     onChange={handleInputChange}
-                    isInvalid={!!errors.password}
+                    isInvalid={!!errors.password1}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.password}
+                    {errors.password1}
                   </Form.Control.Feedback>
                 </Form.Group>
 
@@ -169,18 +168,18 @@ const SignUp = () => {
                   <Form.Label>Confirmar Senha</Form.Label>
                   <Form.Control
                     type="password"
-                    name="confirmPassword"
+                    name="password2"
                     placeholder="**************"
-                    value={formData.confirmPassword}
+                    value={formData.password2}
                     onChange={handleInputChange}
-                    isInvalid={!!errors.confirmPassword}
+                    isInvalid={!!errors.password2}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.confirmPassword}
+                    {errors.password2}
                   </Form.Control.Feedback>
                 </Form.Group>
 
-                {/* <div className="mb-3">
+                <div className="mb-3">
                   <Form.Check
                     type="checkbox"
                     id="terms"
@@ -199,7 +198,7 @@ const SignUp = () => {
                       {errors.terms}
                     </Form.Control.Feedback>
                   </Form.Check>
-                </div> */}
+                </div>
 
                 <div className="d-grid">
                   <Button variant="primary" type="submit" disabled={isLoading}>

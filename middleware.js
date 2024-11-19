@@ -1,19 +1,18 @@
-// middleware.js
 import { NextResponse } from "next/server";
 
-export function middleware(req) {
+export async function middleware(req) {
   console.log("*** Middleware ***");
-  // Verifica se existe um cookie de autenticação
-  // const token = Cookies.get("accessToken");
-  const token = req.cookies.get("accessToken")?.value;
 
-  // Se o token não existir, redireciona para a página de login
-  if (!token) {
+  const accessToken = req.cookies.get("accessToken")?.value;
+  const refreshToken = req.cookies.get("refreshToken")?.value;
+
+  // Se não existir accessToken e refreshToken, redireciona para login
+  if (!accessToken && !refreshToken) {
     return NextResponse.redirect(new URL("/authentication/sign-in", req.url));
   }
 
-  // Validate the token by making an API call
-  const validateToken = async () => {
+  // Função para validar o accessToken
+  const validateAccessToken = async (token) => {
     try {
       const res = await fetch("http://localhost:8000/api/auth/token/verify/", {
         method: "POST",
@@ -22,16 +21,53 @@ export function middleware(req) {
         },
         body: JSON.stringify({ token }),
       });
-      // console.log(res);
-      if (!res.ok) throw new Error("Token validation failed");
+      return res.ok;
     } catch (error) {
-      console.error(error);
-      // router.replace("/authentication/sign-in"); // Redirect to login if token validation fails
-      return NextResponse.redirect(new URL("/authentication/sign-in", req.url));
+      console.error("Token validation failed:", error);
+      return false;
     }
   };
 
-  validateToken();
+  // Função para renovar o accessToken usando o refreshToken
+  const refreshAccessToken = async () => {
+    try {
+      const res = await fetch("http://localhost:8000/api/auth/token/refresh/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        return data.access; // Novo accessToken
+      } else {
+        throw new Error("Refresh token invalid");
+      }
+    } catch (error) {
+      console.error("Error refreshing access token:", error);
+      return null;
+    }
+  };
+
+  // Tenta validar o accessToken atual
+  const isValidAccessToken = await validateAccessToken(accessToken);
+
+  if (!isValidAccessToken) {
+    // Se o accessToken for inválido, tenta renová-lo usando o refreshToken
+    const newAccessToken = await refreshAccessToken();
+
+    if (newAccessToken) {
+      // Atualiza o cookie do accessToken com o novo valor
+      const response = NextResponse.next();
+      response.cookies.set("accessToken", newAccessToken, { httpOnly: true });
+      return response;
+    } else {
+      // Se a renovação falhar, redireciona para a página de login
+      return NextResponse.redirect(new URL("/authentication/sign-in", req.url));
+    }
+  }
 
   return NextResponse.next();
 }
@@ -41,39 +77,7 @@ export const config = {
   matcher: [
     "/pages/:path*",
     "/profile/:path*",
-    "/components/:path*",
+    // "/components/:path*",
     "/protected/:path*",
-  ], // Adicione rotas que precisam ser protegidas
+  ], // Rotas que precisam ser protegidas
 };
-
-// useEffect(() => {
-//   const token = Cookies.get("accessToken");
-//   console.log(token);
-//   if (!token) {
-//     router.replace("/authentication/sign-in"); // If no token is found, redirect to login page
-//     return;
-//   }
-
-//   // Validate the token by making an API call
-//   const validateToken = async () => {
-//     try {
-//       const res = await fetch(
-//         "http://localhost:8000/api/auth/token/verify/",
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//           },
-//           body: JSON.stringify({ token }),
-//         }
-//       );
-//       console.log(res);
-//       if (!res.ok) throw new Error("Token validation failed");
-//     } catch (error) {
-//       console.error(error);
-//       router.replace("/authentication/sign-in"); // Redirect to login if token validation fails
-//     }
-//   };
-
-//   validateToken();
-// }, [router]);
