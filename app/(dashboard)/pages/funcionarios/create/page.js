@@ -17,6 +17,9 @@ import {
   updateFuncionario,
   fetchFuncionarioById,
 } from "@/api/funcionarios";
+
+import { fetchEmpresas } from "api/empresas";
+
 import estados from "data/Estados";
 import { validationSchema } from "utils/validations";
 import ErrorMessage from "sub-components/ErrorMessage";
@@ -68,11 +71,14 @@ const Funcionarios = () => {
     bairro: "",
     cidade: "",
     email: "",
+    user_id: session.id,
   });
 
   const [errors, setErrors] = useState({});
+  const [empresas, setEmpresas] = useState([]);
 
   useEffect(() => {
+    fetchEmpresas().then((data) => setEmpresas(data));
     if (id) {
       fetchFuncionarioById(id)
         .then((data) => {
@@ -267,6 +273,28 @@ const Funcionarios = () => {
 
               {/* Documentação */}
               {/* <h5 className="mt-4">Documentação</h5> */}
+              <Card.Title as="h4">Vínculo</Card.Title>
+              <Row>
+                <Col md={12}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Empresa</Form.Label>
+                    <Form.Select
+                      name="empresa"
+                      value={formData.empresa}
+                      onChange={handleChange}
+                      isInvalid={!!errors.empresa}
+                    >
+                      <option value="">Selecione uma empresa</option>
+                      {empresas.map((empresa) => (
+                        <option key={empresa.id} value={empresa.id}>
+                          {empresa.nome_razao}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    <ErrorMessage message={errors.empresa} />
+                  </Form.Group>
+                </Col>
+              </Row>
               <Card.Title as="h4">Documentação</Card.Title>
               <Row>
                 <Col md={4}>
