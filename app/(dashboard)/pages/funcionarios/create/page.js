@@ -8,6 +8,7 @@ import { Col, Row, Container, Form, Button, Card } from "react-bootstrap";
 import { Save, BookMarked } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuthState } from "@/lib/auth";
 
 // import sub components
 import { PricingCard, PageHeading, FeatureLeftTopIcon } from "widgets";
@@ -38,6 +39,9 @@ const formatDateToSubmit = (dateString) => {
 };
 
 const Funcionarios = () => {
+  const { getUserData } = useAuthState();
+  const session = getUserData();
+
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(!!id);
@@ -152,6 +156,8 @@ const Funcionarios = () => {
           <div className="py-2">
             <Form onSubmit={handleSubmit}>
               {/* Dados Gerais */}
+              {/* Hidden input field for session.id */}
+              <input type="hidden" name="user_id" value={session.id} />
               <Card.Title as="h4">Dados Gerais</Card.Title>
               <Row>
                 <Col md={8}>

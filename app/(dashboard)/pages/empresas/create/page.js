@@ -18,10 +18,10 @@ import ErrorMessage from "sub-components/ErrorMessage";
 import { useAuthState } from "@/lib/auth";
 
 const Empresas = () => {
-  const { id } = useParams(); // Captura o ID da URL
-  const router = useRouter();
   const { getUserData } = useAuthState();
   const session = getUserData();
+  const { id } = useParams(); // Captura o ID da URL
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(!!id);
   const [loading, setLoading] = useState(false); // State for loading button
 
