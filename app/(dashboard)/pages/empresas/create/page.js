@@ -11,6 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 // import sub components
 import { PageHeading } from "widgets";
 import { createEmpresa, updateEmpresa, fetchEmpresaById } from "@/api/empresas";
+import { fetchClientes } from "@/api/clientes";
 import estados from "data/Estados";
 import { validationSchemaEmpresa } from "utils/validations";
 import ErrorMessage from "sub-components/ErrorMessage";
@@ -19,6 +20,8 @@ import { useAuthState } from "@/lib/auth";
 const Empresas = () => {
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
+  const { getUserData } = useAuthState();
+  const session = getUserData();
   const [isEditing, setIsEditing] = useState(!!id);
   const [loading, setLoading] = useState(false); // State for loading button
 
@@ -34,11 +37,14 @@ const Empresas = () => {
     telefone: "",
     email: "",
     inscricao_estadual: "",
+    user_id: session.id,
   });
 
   const [errors, setErrors] = useState({});
+  const [clientes, setClientes] = useState([]);
 
   useEffect(() => {
+    fetchClientes().then((data) => setClientes(data));
     if (id) {
       fetchEmpresaById(id)
         .then((data) => {
@@ -107,6 +113,8 @@ const Empresas = () => {
           </Card.Title>
           <div className="py-2">
             <Form onSubmit={handleSubmit}>
+              {/* Hidden input field for session.id */}
+              <input type="hidden" name="user_id" value={session.id} />
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">
@@ -170,6 +178,28 @@ const Empresas = () => {
                       value={formData.inscricao_estadual}
                       onChange={handleChange}
                     />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col md={12}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Proprietário</Form.Label>
+                    <Form.Select
+                      name="cliente"
+                      value={formData.cliente}
+                      onChange={handleChange}
+                      isInvalid={!!errors.cliente}
+                    >
+                      <option value="">Selecione uma empresa</option>
+                      {clientes.map((cliente) => (
+                        <option key={cliente.id} value={cliente.id}>
+                          {cliente.nome}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    <ErrorMessage message={errors.cliente} />
                   </Form.Group>
                 </Col>
               </Row>
