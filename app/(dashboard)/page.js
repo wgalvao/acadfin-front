@@ -28,7 +28,7 @@ const Home = () => {
                 </div>
                 <div>
                   <Link href="#" className="btn btn-white">
-                    Create New Project
+                    Create New Projects
                   </Link>
                 </div>
               </div>
