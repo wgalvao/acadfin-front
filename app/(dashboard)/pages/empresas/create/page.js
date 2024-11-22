@@ -15,15 +15,15 @@ import { fetchClientes } from "@/api/clientes";
 import estados from "data/Estados";
 import { validationSchemaEmpresa } from "utils/validations";
 import ErrorMessage from "sub-components/ErrorMessage";
-import { useAuthState } from "@/lib/auth";
 
+import { useSession } from "next-auth/react";
 const Empresas = () => {
-  const { getUserData } = useAuthState();
-  const session = getUserData();
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(!!id);
   const [loading, setLoading] = useState(false); // State for loading button
+
+  const { data: session, status } = useSession({ required: true });
 
   const [formData, setFormData] = useState({
     cnpj: "",
@@ -37,14 +37,14 @@ const Empresas = () => {
     telefone: "",
     email: "",
     inscricao_estadual: "",
-    user_id: session.id,
+    user_id: session.user.pk,
   });
 
   const [errors, setErrors] = useState({});
   const [clientes, setClientes] = useState([]);
 
   useEffect(() => {
-    fetchClientes(session.id).then((data) => setClientes(data));
+    fetchClientes(session.user.pk).then((data) => setClientes(data));
     if (id) {
       fetchEmpresaById(id)
         .then((data) => {
@@ -113,8 +113,8 @@ const Empresas = () => {
           </Card.Title>
           <div className="py-2">
             <Form onSubmit={handleSubmit}>
-              {/* Hidden input field for session.id */}
-              <input type="hidden" name="user_id" value={session.id} />
+              {/* Hidden input field for session.user.pk */}
+              <input type="hidden" name="user_id" value={session.user.pk} />
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">

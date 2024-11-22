@@ -1,9 +1,10 @@
 # TODO
 
+[ ] - Cliente by user id utilizando apenas next auth
+
 ## Observações
 
-- O tamanho do campo definido em models.py afeta bastante os erros na hora de salvar
-- Cadastro de clientes já traz o campo claendário correntamente
+- UNIFICAR em signUp apenas a função de registro para utilizar apenas o next-auth
 
 ## Desafios
 

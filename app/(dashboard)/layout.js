@@ -9,8 +9,8 @@ import "styles/theme.scss";
 import NavbarVertical from "/layouts/navbars/NavbarVertical";
 import NavbarTop from "/layouts/navbars/NavbarTop";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import NextAuthProvider from "providers/Provider";
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function DashboardLayout({ children }) {
             }}
           />
         </div>
-        {children}
+        <NextAuthProvider>{children}</NextAuthProvider>
       </div>
     </div>
   );

@@ -25,34 +25,20 @@ const SignIn = () => {
 
     try {
       // Passo 1: Autenticação e obtenção dos tokens
-      const { access, refresh, id, name } = await authenticateAndFetchData(
-        username,
-        password
-      );
-
-      // // Armazena tokens e dados do usuário nos cookies com configurações de segurança
-      // Cookies.set("accessToken", access, {
-      //   secure: true,
-      //   sameSite: "Strict",
-      //   expires: 1,
-      // }); // Expira em 1 dia
-      // Cookies.set("refreshToken", refresh, {
-      //   secure: true,
-      //   sameSite: "Strict",
-      //   expires: 7,
-      // }); // Expira em 7 dias
-      // Cookies.set("userId", id, {
-      //   secure: true,
-      //   sameSite: "Strict",
-      //   expires: 7,
-      // }); // Expira em 7 dia
-      // Cookies.set("userName", name, {
-      //   secure: true,
-      //   sameSite: "Strict",
-      //   expires: 7,
-      // }); // Expira em 7 dias
-      // // Optional: Redirect to the dashboard after successful login
-      router.push("/");
+      // const { access, refresh, id, name } = await authenticateAndFetchData(
+      //   username,
+      //   password
+      // );
+      const result = await signIn("credentials", {
+        username: username,
+        password: password,
+        redirect: false,
+        callbackUrl: "/",
+      });
+      console.log(result);
+      if (result.ok) {
+        router.push("/");
+      }
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "An unexpected error occurred"
@@ -78,7 +64,6 @@ const SignIn = () => {
                   alt=""
                 />
               </Link>
-              <Button onClick={() => signIn()}></Button>
               <p className="mb-6">
                 Por favor, entre com suas credenciais de acesso.
               </p>
