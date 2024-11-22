@@ -11,13 +11,15 @@ import { fetchClienteById, createCliente, updateCliente } from "@/api/clientes";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { useSession, signOut } from "next-auth/react";
+
 const ClienteForm = () => {
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
-  const { getUserData } = useAuthState();
-  const session = getUserData();
   const [isCreating, setIsCreating] = useState(!id);
   const [loading, setLoading] = useState(false); // State for loading button
+
+  const { data: session, status } = useSession({ required: true });
 
   const [formData, setFormData] = useState({
     nome: "",
@@ -25,7 +27,7 @@ const ClienteForm = () => {
     taxa_desconto: "",
     limite_credito: "",
     observacao: "",
-    user_id: session.id,
+    user_id: session.user.pk,
   });
   const [errors, setErrors] = useState({});
 
@@ -117,7 +119,7 @@ const ClienteForm = () => {
               <div className="py-2">
                 <Form onSubmit={handleSubmit}>
                   {/* Hidden input field for session.id */}
-                  <input type="hidden" name="user_id" value={session.id} />
+                  <input type="hidden" name="user_id" value={session.user.pk} />
 
                   {/* Form fields */}
                   <Form.Group className="mb-3">

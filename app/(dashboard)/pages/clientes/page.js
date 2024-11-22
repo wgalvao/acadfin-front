@@ -16,7 +16,7 @@ import { fetchClientes, deleteCliente } from "@/api/clientes";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
-import { useAuthState } from "@/lib/auth";
+import { useSession, signOut } from "next-auth/react";
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -27,13 +27,12 @@ const Clientes = () => {
   const [selectedCliente, setSelectedCliente] = useState(null);
   const [clienteId, setClienteId] = useState(null);
 
-  const { getUserData } = useAuthState();
-  const session = getUserData();
+  const { data: session, status } = useSession({ required: true });
 
   const loadClientes = async () => {
     setLoading(true);
     try {
-      const data = await fetchClientes(session.id);
+      const data = await fetchClientes(session.user.pk);
       setClientes(data);
     } catch (err) {
       setError(err.message);
