@@ -44,7 +44,7 @@ const Empresas = () => {
   const [clientes, setClientes] = useState([]);
 
   useEffect(() => {
-    fetchClientes().then((data) => setClientes(data));
+    fetchClientes(session.id).then((data) => setClientes(data));
     if (id) {
       fetchEmpresaById(id)
         .then((data) => {

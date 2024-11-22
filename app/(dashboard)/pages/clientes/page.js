@@ -16,6 +16,7 @@ import { fetchClientes, deleteCliente } from "@/api/clientes";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import { useAuthState } from "@/lib/auth";
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -26,10 +27,13 @@ const Clientes = () => {
   const [selectedCliente, setSelectedCliente] = useState(null);
   const [clienteId, setClienteId] = useState(null);
 
+  const { getUserData } = useAuthState();
+  const session = getUserData();
+
   const loadClientes = async () => {
     setLoading(true);
     try {
-      const data = await fetchClientes();
+      const data = await fetchClientes(session.id);
       setClientes(data);
     } catch (err) {
       setError(err.message);

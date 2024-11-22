@@ -16,6 +16,7 @@ import { fetchEmpresas, deleteEmpresa } from "@/api/empresas";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import { useAuthState } from "@/lib/auth";
 
 const Empresas = () => {
   const [empresas, setEmpresas] = useState([]);
@@ -26,10 +27,13 @@ const Empresas = () => {
   const [selectedEmpresa, setSelectedEmpresa] = useState(null);
   const [empresaId, setEmpresaId] = useState(null);
 
+  const { getUserData } = useAuthState();
+  const session = getUserData();
+
   const loadEmpresas = async () => {
     setLoading(true);
     try {
-      const data = await fetchEmpresas();
+      const data = await fetchEmpresas(session.id);
       setEmpresas(data);
     } catch (err) {
       setError(err.message);
