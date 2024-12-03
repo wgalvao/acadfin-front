@@ -16,6 +16,7 @@ import { fetchFornecedores, deleteFornecedor } from "@/api/fornecedores";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import { useSession } from "next-auth/react";
 
 const Fornecedores = () => {
   const [fornecedores, setFornecedores] = useState([]);
@@ -25,11 +26,12 @@ const Fornecedores = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedFornecedor, setSelectedFornecedor] = useState(null);
   const [fornecedorId, setFornecedorId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadFornecedores = async () => {
     setLoading(true);
     try {
-      const data = await fetchFornecedores();
+      const data = await fetchFornecedores(session.user.pk);
       setFornecedores(data);
     } catch (err) {
       setError(err.message);
