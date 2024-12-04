@@ -17,6 +17,7 @@ import { fetchClientes, deleteCliente } from "@/api/clientes";
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
 import { useSession, signOut } from "next-auth/react";
+import { Loader2 } from "lucide-react";
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -29,9 +30,33 @@ const Clientes = () => {
 
   const { data: session, status } = useSession({ required: true });
 
+  const LoadingSpinner = () => (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
+    >
+      <Loader2 size={48} className="spinner" />
+    </div>
+  );
+
+  useEffect(() => {
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadClientes();
+    }
+  }, [status]);
+
   const loadClientes = async () => {
     setLoading(true);
     try {
+      if (!session?.user?.pk) {
+        setError("Sessão inválida ou expirada.");
+        return;
+      }
       const data = await fetchClientes(session.user.pk);
       setClientes(data);
     } catch (err) {
@@ -41,9 +66,14 @@ const Clientes = () => {
     }
   };
 
-  useEffect(() => {
-    loadClientes();
-  }, []);
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
+
+  if (status === "unauthenticated") {
+    return <p>Usuário não autenticado. Faça login para continuar.</p>;
+  }
 
   const handleDeleteClick = (id) => {
     setClienteId(id);
