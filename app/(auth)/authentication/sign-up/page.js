@@ -125,7 +125,7 @@ const SignUp = () => {
                   <Form.Control
                     type="text"
                     name="username"
-                    placeholder="Nome de Usuário"
+                    placeholder="Informe tal como o @ do instagram. Sem acentos ou espaços"
                     value={formData.username}
                     onChange={handleInputChange}
                     isInvalid={!!errors.username}
