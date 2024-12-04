@@ -30,7 +30,7 @@ const FuncaoForm = () => {
     codva: "",
     codvp: "",
     codvt: "",
-    user_id: session.user.pk,
+    user_id: "",
   });
   const [errors, setErrors] = useState({});
   const [empresas, setEmpresas] = useState([]);
@@ -101,6 +101,15 @@ const FuncaoForm = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.pk) {
+      setFormData((prevState) => ({
+        ...prevState,
+        user_id: session.user.pk, // Atualize o user_id no estado
+      }));
+    }
+  }, [session, status]);
+
   return (
     <Container fluid className="p-6">
       <PageHeading heading="Funções" />
@@ -115,7 +124,11 @@ const FuncaoForm = () => {
               <div className="py-2">
                 <Form onSubmit={handleSubmit}>
                   {/* Hidden input field for session.id */}
-                  <input type="hidden" name="user_id" value={session.user.pk} />
+                  <input
+                    type="hidden"
+                    name="user_id"
+                    value={session?.user?.pk}
+                  />
 
                   {/* Form fields */}
                   <Form.Group className="mb-3">

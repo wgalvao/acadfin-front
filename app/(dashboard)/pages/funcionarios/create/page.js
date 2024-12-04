@@ -150,6 +150,15 @@ const Funcionarios = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.pk) {
+      setFormData((prevState) => ({
+        ...prevState,
+        user_id: session.user.pk, // Atualize o user_id no estado
+      }));
+    }
+  }, [session, status]);
+
   if (session) {
     return (
       <Container fluid className="p-6">
@@ -168,7 +177,7 @@ const Funcionarios = () => {
               <Form onSubmit={handleSubmit}>
                 {/* Dados Gerais */}
                 {/* Hidden input field for session.id */}
-                <input type="hidden" name="user_id" value={session.user.pk} />
+                <input type="hidden" name="user_id" value={session?.user?.pk} />
                 <Card.Title as="h4">Dados Gerais</Card.Title>
                 <Row>
                   <Col md={8}>

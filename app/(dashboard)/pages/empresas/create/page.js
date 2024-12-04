@@ -37,7 +37,7 @@ const Empresas = () => {
     telefone: "",
     email: "",
     inscricao_estadual: "",
-    user_id: session.user.pk,
+    user_id: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -101,6 +101,15 @@ const Empresas = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.pk) {
+      setFormData((prevState) => ({
+        ...prevState,
+        user_id: session.user.pk, // Atualize o user_id no estado
+      }));
+    }
+  }, [session, status]);
+
   return (
     <Container fluid className="p-6">
       <PageHeading heading="Empresas" />
@@ -114,7 +123,7 @@ const Empresas = () => {
           <div className="py-2">
             <Form onSubmit={handleSubmit}>
               {/* Hidden input field for session.user.pk */}
-              <input type="hidden" name="user_id" value={session.user.pk} />
+              <input type="hidden" name="user_id" value={session?.user?.pk} />
               <Row>
                 <Col md={6}>
                   <Form.Group className="mb-3">

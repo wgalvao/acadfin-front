@@ -27,7 +27,7 @@ const AcumuladorForm = () => {
     tipo: "",
     descricao: "",
     valor: "",
-    user_id: session.user.pk,
+    user_id: "",
   });
   const [errors, setErrors] = useState({});
 
@@ -103,6 +103,15 @@ const AcumuladorForm = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.pk) {
+      setFormData((prevState) => ({
+        ...prevState,
+        user_id: session.user.pk, // Atualize o user_id no estado
+      }));
+    }
+  }, [session, status]);
+
   return (
     <Container fluid className="p-6">
       <PageHeading heading="Acumuladores" />
@@ -119,7 +128,11 @@ const AcumuladorForm = () => {
               <div className="py-2">
                 <Form onSubmit={handleSubmit}>
                   {/* Hidden input field for session.id */}
-                  <input type="hidden" name="user_id" value={session.user.pk} />
+                  <input
+                    type="hidden"
+                    name="user_id"
+                    value={session?.user?.pk}
+                  />
 
                   {/* Form fields */}
                   <Form.Group className="mb-3">
