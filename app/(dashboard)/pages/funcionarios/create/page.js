@@ -19,6 +19,7 @@ import {
 } from "@/api/funcionarios";
 
 import { fetchEmpresas } from "api/empresas";
+import { fetchCargos } from "api/cargos";
 
 import estados from "data/Estados";
 import { validationSchema } from "utils/validations";
@@ -75,12 +76,16 @@ const Funcionarios = () => {
 
   const [errors, setErrors] = useState({});
   const [empresas, setEmpresas] = useState([]);
+  const [cargos, setCargos] = useState([]);
 
-  useEffect(() => {
-    if (session === "authenticated") {
-      fetchEmpresas(session.user.pk).then((data) => setEmpresas(data));
-    }
-  }, [session]);
+  // useEffect(() => {
+  //   if (session === "authenticated") {
+  //     fetchEmpresas(session.user.pk).then((data) => setEmpresas(data));
+  //     console.log("ffffffffffffffff");
+  //     console.log(data);
+  //     // fetchCargos(session.user.pk).then((data) => setCargos(data));
+  //   }
+  // }, [session]);
 
   useEffect(() => {
     if (id) {
@@ -156,6 +161,8 @@ const Funcionarios = () => {
         ...prevState,
         user_id: session.user.pk, // Atualize o user_id no estado
       }));
+      fetchEmpresas(session.user.pk).then((data) => setEmpresas(data));
+      fetchCargos(session.user.pk).then((dataCargos) => setCargos(dataCargos));
     }
   }, [session, status]);
 
@@ -289,7 +296,7 @@ const Funcionarios = () => {
                 {/* <h5 className="mt-4">Documentação</h5> */}
                 <Card.Title as="h4">Vínculo</Card.Title>
                 <Row>
-                  <Col md={12}>
+                  <Col md={6}>
                     <Form.Group className="mb-3">
                       <Form.Label>Empresa</Form.Label>
                       <Form.Select
@@ -302,6 +309,25 @@ const Funcionarios = () => {
                         {empresas.map((empresa) => (
                           <option key={empresa.id} value={empresa.id}>
                             {empresa.nome_razao}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <ErrorMessage message={errors.empresa} />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Cargo</Form.Label>
+                      <Form.Select
+                        name="cargo"
+                        value={formData.cargo}
+                        onChange={handleChange}
+                        isInvalid={!!errors.cargo}
+                      >
+                        <option value="">Selecione um cargo</option>
+                        {cargos.map((cargo) => (
+                          <option key={cargo.id} value={cargo.id}>
+                            {cargo.cargo}
                           </option>
                         ))}
                       </Form.Select>
