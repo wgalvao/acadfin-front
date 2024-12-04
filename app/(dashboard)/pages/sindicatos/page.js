@@ -18,6 +18,8 @@ import { fetchSindicatos, deleteSindicato } from "@/api/sindicatos";
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
 import ModalDetails from "sub-components/crud/ModalDetails";
+import LoadingSpinner from "sub-components/crud/Spinner";
+import { useSession } from "next-auth/react";
 
 const Sindicatos = () => {
   const [sindicatos, setSindicatos] = useState([]);
@@ -42,8 +44,16 @@ const Sindicatos = () => {
   };
 
   useEffect(() => {
-    loadSindicatos();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadSindicatos();
+    }
+  }, [status]);
+
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
 
   const handleDeleteClick = (id) => {
     setSindicatoId(id);

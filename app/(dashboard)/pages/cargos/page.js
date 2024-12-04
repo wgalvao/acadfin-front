@@ -17,6 +17,9 @@ import { fetchCargos, deleteCargo } from "@/api/cargos";
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
 
+import { useSession } from "next-auth/react";
+import LoadingSpinner from "sub-components/crud/Spinner";
+
 const Cargos = () => {
   const [cargos, setCargos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -40,8 +43,16 @@ const Cargos = () => {
   };
 
   useEffect(() => {
-    loadCargos();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadCargos();
+    }
+  }, [status]);
+
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
 
   const handleDeleteClick = (id) => {
     setCargoId(id);

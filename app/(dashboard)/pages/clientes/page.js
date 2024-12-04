@@ -17,7 +17,8 @@ import { fetchClientes, deleteCliente } from "@/api/clientes";
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
 import { useSession, signOut } from "next-auth/react";
-import { Loader2 } from "lucide-react";
+// import Spinners from "app/(dashboard)/components/spinners/page";
+import LoadingSpinner from "sub-components/crud/Spinner";
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -29,19 +30,6 @@ const Clientes = () => {
   const [clienteId, setClienteId] = useState(null);
 
   const { data: session, status } = useSession({ required: true });
-
-  const LoadingSpinner = () => (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-      }}
-    >
-      <Loader2 size={48} className="spinner" />
-    </div>
-  );
 
   useEffect(() => {
     // Só carrega os dados se a sessão estiver autenticada

@@ -16,6 +16,9 @@ import { fetchBaseCalculos, deleteBaseCalculo } from "@/api/baseCalculo";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import { useSession } from "next-auth/react";
+
+import LoadingSpinner from "sub-components/crud/Spinner";
 
 const BaseCalculo = () => {
   const [baseCalculos, setBaseCalculos] = useState([]);
@@ -40,9 +43,16 @@ const BaseCalculo = () => {
   };
 
   useEffect(() => {
-    loadBaseCalculos();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadBaseCalculos();
+    }
+  }, [status]);
 
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
   const handleDeleteClick = (id) => {
     setBaseCalculoId(id);
     setShowDeleteModal(true);

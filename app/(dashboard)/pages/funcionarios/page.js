@@ -16,6 +16,8 @@ import { fetchFuncionarios, deleteFuncionario } from "@/api/funcionarios";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import { useSession } from "next-auth/react";
+import LoadingSpinner from "sub-components/crud/Spinner";
 
 const Funcionarios = () => {
   const [funcionarios, setFuncionarios] = useState([]);
@@ -40,8 +42,16 @@ const Funcionarios = () => {
   };
 
   useEffect(() => {
-    loadFuncionarios();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadFuncionarios();
+    }
+  }, [status]);
+
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
 
   const handleDeleteClick = (id) => {
     setFuncionarioId(id);

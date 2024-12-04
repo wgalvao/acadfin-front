@@ -16,6 +16,7 @@ import { fetchFornecedores, deleteFornecedor } from "@/api/fornecedores";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import LoadingSpinner from "sub-components/crud/Spinner";
 import { useSession } from "next-auth/react";
 
 const Fornecedores = () => {
@@ -39,11 +40,17 @@ const Fornecedores = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    loadFornecedores();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadFornecedores();
+    }
+  }, [status]);
 
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
   const handleDeleteClick = (id) => {
     setFornecedorId(id);
     setShowDeleteModal(true);

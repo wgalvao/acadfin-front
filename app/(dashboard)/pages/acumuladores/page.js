@@ -16,6 +16,8 @@ import { fetchAcumuladores, deleteAcumulador } from "@/api/acumuladores";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import LoadingSpinner from "sub-components/crud/Spinner";
+import { useSession } from "next-auth/react";
 
 const Acumuladores = () => {
   const [acumuladores, setAcumuladores] = useState([]);
@@ -41,8 +43,16 @@ const Acumuladores = () => {
   };
 
   useEffect(() => {
-    loadAcumuladores();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadAcumuladores();
+    }
+  }, [status]);
+
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
 
   const handleDeleteClick = (id) => {
     setAcumuladorId(id);
