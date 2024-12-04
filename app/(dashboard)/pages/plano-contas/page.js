@@ -25,11 +25,12 @@ const PlanoContas = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedPlanoConta, setSelectedPlanoConta] = useState(null);
   const [planoContaId, setPlanoContaId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadPlanoContas = async () => {
     setLoading(true);
     try {
-      const data = await fetchPlanoContas();
+      const data = await fetchPlanoContas(session.user.pk);
       setPlanoContas(data);
     } catch (err) {
       setError(err.message);

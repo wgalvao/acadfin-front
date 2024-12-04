@@ -25,11 +25,12 @@ const Funcoes = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedFuncao, setSelectedFuncao] = useState(null);
   const [funcaoId, setFuncaoId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadFuncoes = async () => {
     setLoading(true);
     try {
-      const data = await fetchFuncoes();
+      const data = await fetchFuncoes(session.user.pk);
       setFuncoes(data);
     } catch (err) {
       setError(err.message);

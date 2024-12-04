@@ -25,11 +25,12 @@ const Contas = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedConta, setSelectedConta] = useState(null);
   const [contaId, setContaId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadContas = async () => {
     setLoading(true);
     try {
-      const data = await fetchContas();
+      const data = await fetchContas(session.user.pk);
       setContas(data);
     } catch (err) {
       setError(err.message);

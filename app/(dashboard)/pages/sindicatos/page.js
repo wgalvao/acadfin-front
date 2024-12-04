@@ -27,11 +27,12 @@ const Sindicatos = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedSindicato, setSelectedSindicato] = useState(null);
   const [sindicatoId, setSindicatoId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadSindicatos = async () => {
     setLoading(true);
     try {
-      const data = await fetchSindicatos();
+      const data = await fetchSindicatos(session.user.pk);
       setSindicatos(data);
     } catch (err) {
       setError(err.message);

@@ -6,7 +6,7 @@ import { Save, Briefcase } from "lucide-react";
 import { PageHeading } from "widgets";
 import { validationSchemaCentroCusto } from "utils/validations"; // Assume-se que validationSchemaCentroCusto está definido para validar campos de centro de custo
 import ErrorMessage from "sub-components/ErrorMessage";
-import { useAuthState } from "@/lib/auth";
+import { useSession, signOut } from "next-auth/react";
 import {
   fetchCentroCustoById,
   createCentroCusto,
@@ -18,8 +18,7 @@ import "react-toastify/dist/ReactToastify.css";
 const Home = () => {
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
-  const { getUserData } = useAuthState();
-  const session = getUserData();
+  const { data: session, status } = useSession({ required: true });
   const [isCreating, setIsCreating] = useState(!id);
   const [loading, setLoading] = useState(false); // State for loading button
 
@@ -28,7 +27,7 @@ const Home = () => {
     descricao: "",
     codigo: "",
     ativo: true,
-    user_id: session.id,
+    user_id: session.user.pk,
   });
   const [errors, setErrors] = useState({});
 
@@ -114,7 +113,7 @@ const Home = () => {
               <div className="py-2">
                 <Form onSubmit={handleSubmit}>
                   {/* Hidden input field for session.id */}
-                  <input type="hidden" name="user_id" value={session.id} />
+                  <input type="hidden" name="user_id" value={session.user.pk} />
 
                   {/* Form fields */}
                   <Form.Group className="mb-3">

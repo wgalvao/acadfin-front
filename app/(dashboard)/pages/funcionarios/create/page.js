@@ -8,7 +8,7 @@ import { Col, Row, Container, Form, Button, Card } from "react-bootstrap";
 import { Save, BookMarked } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useAuthState } from "@/lib/auth";
+import { useSession, signOut } from "next-auth/react";
 
 // import sub components
 import { PricingCard, PageHeading, FeatureLeftTopIcon } from "widgets";
@@ -42,8 +42,7 @@ const formatDateToSubmit = (dateString) => {
 };
 
 const Funcionarios = () => {
-  const { getUserData } = useAuthState();
-  const session = getUserData();
+  const { data: session, status } = useSession({ required: true });
 
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
@@ -71,7 +70,7 @@ const Funcionarios = () => {
     bairro: "",
     cidade: "",
     email: "",
-    user_id: session.id,
+    user_id: session.user.pk,
   });
 
   const [errors, setErrors] = useState({});
@@ -163,7 +162,7 @@ const Funcionarios = () => {
             <Form onSubmit={handleSubmit}>
               {/* Dados Gerais */}
               {/* Hidden input field for session.id */}
-              <input type="hidden" name="user_id" value={session.id} />
+              <input type="hidden" name="user_id" value={session.user.pk} />
               <Card.Title as="h4">Dados Gerais</Card.Title>
               <Row>
                 <Col md={8}>

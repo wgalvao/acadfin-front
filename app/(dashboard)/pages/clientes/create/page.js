@@ -6,7 +6,7 @@ import { Save, User } from "lucide-react";
 import { PageHeading } from "widgets";
 import { validationSchemaCliente } from "utils/validations"; // Assume-se que validationSchemaCliente está definido para validar campos de cliente
 import ErrorMessage from "sub-components/ErrorMessage";
-import { useAuthState } from "@/lib/auth";
+
 import { fetchClienteById, createCliente, updateCliente } from "@/api/clientes";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

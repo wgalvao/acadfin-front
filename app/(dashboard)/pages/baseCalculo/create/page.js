@@ -6,7 +6,7 @@ import { Save, Calculator } from "lucide-react";
 import { PageHeading } from "widgets";
 import { validationSchemaBaseCalculo } from "utils/validations"; // Assume-se que validationSchemaBaseCalculo está definido para validar campos de base de cálculo
 import ErrorMessage from "sub-components/ErrorMessage";
-import { useAuthState } from "@/lib/auth";
+import { useSession, signOut } from "next-auth/react";
 import {
   fetchBaseCalculoById,
   createBaseCalculo,
@@ -18,8 +18,7 @@ import "react-toastify/dist/ReactToastify.css";
 const BaseCalculoForm = () => {
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
-  const { getUserData } = useAuthState();
-  const session = getUserData();
+  const { data: session, status } = useSession({ required: true });
   const [isCreating, setIsCreating] = useState(!id);
   const [loading, setLoading] = useState(false); // State for loading button
 
@@ -31,7 +30,7 @@ const BaseCalculoForm = () => {
     valor_minimo: "",
     valor_maximo: "",
     ativo: true,
-    user_id: session.id,
+    user_id: session.user.pk,
   });
   const [errors, setErrors] = useState({});
 
@@ -117,7 +116,7 @@ const BaseCalculoForm = () => {
               <div className="py-2">
                 <Form onSubmit={handleSubmit}>
                   {/* Hidden input field for session.id */}
-                  <input type="hidden" name="user_id" value={session.id} />
+                  <input type="hidden" name="user_id" value={session.user.pk} />
 
                   {/* Form fields */}
                   <Form.Group className="mb-3">

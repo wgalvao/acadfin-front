@@ -25,11 +25,12 @@ const CentroCusto = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedCentroCusto, setSelectedCentroCusto] = useState(null);
   const [centroCustoId, setCentroCustoId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadCentroCustos = async () => {
     setLoading(true);
     try {
-      const data = await fetchCentroCustos();
+      const data = await fetchCentroCustos(session.user.pk);
       setCentroCustos(data);
     } catch (err) {
       setError(err.message);

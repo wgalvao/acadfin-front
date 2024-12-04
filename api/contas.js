@@ -1,9 +1,9 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "contas/";
 
 // Função para obter todos os Contas
-export const fetchContas = async () => {
+export const fetchContas = async (id) => {
   try {
-    const response = await fetch(BASE_URL);
+    const response = await fetch(`${BASE_URL}user/${id}`);
     if (!response.ok) {
       throw new Error("Erro ao buscar Contas");
     }

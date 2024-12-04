@@ -25,11 +25,12 @@ const Cargos = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedCargo, setSelectedCargo] = useState(null);
   const [cargoId, setCargoId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadCargos = async () => {
     setLoading(true);
     try {
-      const data = await fetchCargos();
+      const data = await fetchCargos(session.user.pk);
       setCargos(data);
     } catch (err) {
       setError(err.message);

@@ -6,7 +6,7 @@ import { Save, FileText } from "lucide-react";
 import { PageHeading } from "widgets";
 import { validationSchemaCfop } from "utils/validations"; // Assume-se que validationSchemaCfop está definido para validar campos de CFOP
 import ErrorMessage from "sub-components/ErrorMessage";
-import { useAuthState } from "@/lib/auth";
+import { useSession, signOut } from "next-auth/react";
 import { fetchCfopById, createCfop, updateCfop } from "@/api/cfops";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -14,8 +14,7 @@ import "react-toastify/dist/ReactToastify.css";
 const CfopForm = () => {
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
-  const { getUserData } = useAuthState();
-  const session = getUserData();
+  const { data: session, status } = useSession({ required: true });
   const [isCreating, setIsCreating] = useState(!id);
   const [loading, setLoading] = useState(false); // State for loading button
 
@@ -23,7 +22,7 @@ const CfopForm = () => {
     codigo: "",
     descricao: "",
     tipo_operacao: "",
-    user_id: session.id,
+    user_id: session.user.pk,
   });
   const [errors, setErrors] = useState({});
 
@@ -105,7 +104,7 @@ const CfopForm = () => {
               <div className="py-2">
                 <Form onSubmit={handleSubmit}>
                   {/* Hidden input field for session.id */}
-                  <input type="hidden" name="user_id" value={session.id} />
+                  <input type="hidden" name="user_id" value={session.user.pk} />
 
                   {/* Form fields */}
                   <Form.Group className="mb-3">

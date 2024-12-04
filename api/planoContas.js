@@ -1,9 +1,9 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "plano-contas/";
 
 // Função para obter todos os Planos de Contas
-export const fetchPlanoContas = async () => {
+export const fetchPlanoContas = async (id) => {
   try {
-    const response = await fetch(BASE_URL);
+    const response = await fetch(`${BASE_URL}user/${id}`);
     if (!response.ok) {
       throw new Error("Erro ao buscar planos de contas");
     }

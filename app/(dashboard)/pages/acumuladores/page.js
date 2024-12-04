@@ -26,10 +26,12 @@ const Acumuladores = () => {
   const [selectedAcumulador, setSelectedAcumulador] = useState(null);
   const [acumuladorId, setAcumuladorId] = useState(null);
 
+  const { data: session, status } = useSession({ required: true });
+
   const loadAcumuladores = async () => {
     setLoading(true);
     try {
-      const data = await fetchAcumuladores();
+      const data = await fetchAcumuladores(session.user.pk);
       setAcumuladores(data);
     } catch (err) {
       setError(err.message);

@@ -1,9 +1,9 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "base-calculos/";
 
 // Função para obter todas as bases de cálculo
-export const fetchBaseCalculos = async () => {
+export const fetchBaseCalculos = async (id) => {
   try {
-    const response = await fetch(BASE_URL);
+    const response = await fetch(`${BASE_URL}user/${id}`);
     if (!response.ok) {
       throw new Error("Erro ao buscar bases de cálculo");
     }

@@ -25,11 +25,12 @@ const Servicos = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedServico, setSelectedServico] = useState(null);
   const [servicoId, setServicoId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadServicos = async () => {
     setLoading(true);
     try {
-      const data = await fetchServicos();
+      const data = await fetchServicos(session.user.pk);
       setServicos(data);
     } catch (err) {
       setError(err.message);

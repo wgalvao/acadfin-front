@@ -26,10 +26,12 @@ const Cfops = () => {
   const [selectedCfop, setSelectedCfop] = useState(null);
   const [cfopId, setCfopId] = useState(null);
 
+  const { data: session, status } = useSession({ required: true });
+
   const loadCfops = async () => {
     setLoading(true);
     try {
-      const data = await fetchCfops();
+      const data = await fetchCfops(session.user.pk);
       setCfops(data);
     } catch (err) {
       setError(err.message);

@@ -25,11 +25,12 @@ const Funcionarios = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedFuncionario, setSelectedFuncionario] = useState(null);
   const [funcionarioId, setFuncionarioId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadFuncionarios = async () => {
     setLoading(true);
     try {
-      const data = await fetchFuncionarios();
+      const data = await fetchFuncionarios(session.user.pk);
       setFuncionarios(data);
     } catch (err) {
       setError(err.message);

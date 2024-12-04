@@ -6,7 +6,7 @@ import { Save, Wallet } from "lucide-react";
 import { PageHeading } from "widgets";
 import { validationSchemaConta } from "utils/validations"; // Assume-se que validationSchemaConta está definido para validar campos de conta
 import ErrorMessage from "sub-components/ErrorMessage";
-import { useAuthState } from "@/lib/auth";
+import { useSession, signOut } from "next-auth/react";
 import { fetchContaById, createConta, updateConta } from "@/api/contas";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -14,8 +14,7 @@ import "react-toastify/dist/ReactToastify.css";
 const ContaForm = () => {
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
-  const { getUserData } = useAuthState();
-  const session = getUserData();
+  const { data: session, status } = useSession({ required: true });
   const [isCreating, setIsCreating] = useState(!id);
   const [loading, setLoading] = useState(false); // State for loading button
 
@@ -24,7 +23,7 @@ const ContaForm = () => {
     tipo_conta: "",
     descricao: "",
     saldo: "",
-    user_id: session.id,
+    user_id: session.user.pk,
   });
   const [errors, setErrors] = useState({});
 
@@ -112,7 +111,7 @@ const ContaForm = () => {
               <div className="py-2">
                 <Form onSubmit={handleSubmit}>
                   {/* Hidden input field for session.id */}
-                  <input type="hidden" name="user_id" value={session.id} />
+                  <input type="hidden" name="user_id" value={session.user.pk} />
 
                   {/* Form fields */}
                   <Form.Group className="mb-3">

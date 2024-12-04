@@ -25,11 +25,12 @@ const BaseCalculo = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedBaseCalculo, setSelectedBaseCalculo] = useState(null);
   const [baseCalculoId, setBaseCalculoId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadBaseCalculos = async () => {
     setLoading(true);
     try {
-      const data = await fetchBaseCalculos();
+      const data = await fetchBaseCalculos(session.user.pk);
       setBaseCalculos(data);
     } catch (err) {
       setError(err.message);

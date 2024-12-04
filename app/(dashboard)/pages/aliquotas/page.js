@@ -25,11 +25,12 @@ const Aliquotas = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedAliquota, setSelectedAliquota] = useState(null);
   const [aliquotaId, setAliquotaId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadAliquotas = async () => {
     setLoading(true);
     try {
-      const data = await fetchAliquotas();
+      const data = await fetchAliquotas(session.user.pk);
       setAliquotas(data);
     } catch (err) {
       setError(err.message);
