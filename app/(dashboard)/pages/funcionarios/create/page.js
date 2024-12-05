@@ -77,15 +77,7 @@ const Funcionarios = () => {
   const [errors, setErrors] = useState({});
   const [empresas, setEmpresas] = useState([]);
   const [cargos, setCargos] = useState([]);
-
-  // useEffect(() => {
-  //   if (session === "authenticated") {
-  //     fetchEmpresas(session.user.pk).then((data) => setEmpresas(data));
-  //     console.log("ffffffffffffffff");
-  //     console.log(data);
-  //     // fetchCargos(session.user.pk).then((data) => setCargos(data));
-  //   }
-  // }, [session]);
+  const [ocrResult, setOcrResult] = useState(null);
 
   useEffect(() => {
     if (id) {
@@ -166,11 +158,80 @@ const Funcionarios = () => {
     }
   }, [session, status]);
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      console.error("Nenhum arquivo selecionado.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/ocr", {
+        method: "POST",
+        body: formData,
+      });
+
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("OCR Result:", result);
+        setOcrResult(result);
+        toast.success("Imagem processada com sucesso!", { autoClose: 2000 });
+      } else {
+        const errorText = await response.text();
+        console.error("Erro ao processar a imagem:", errorText);
+        toast.error("Erro ao processar a imagem.", { autoClose: 2000 });
+      }
+    } catch (error) {
+      console.error("Erro ao enviar a imagem:", error);
+      toast.error("Erro ao enviar a imagem.", { autoClose: 2000 });
+    }
+  };
+
   if (session) {
     return (
       <Container fluid className="p-6">
         {/* Page Heading */}
         <PageHeading heading="Funcionários" />
+
+        {/* Campo de upload de imagem */}
+        <Card className="mb-4">
+          <Card.Body>
+            <Card.Title as="h3">Upload de Documento</Card.Title>
+            <Form.Group>
+              <Form.Label>Selecione uma imagem</Form.Label>
+              <Form.Control type="file" onChange={handleImageUpload} />
+            </Form.Group>
+          </Card.Body>
+        </Card>
+
+        {/* Exibir resultado JSON */}
+        {ocrResult && (
+          <Card className="mb-4">
+            <Card.Body>
+              <Card.Title as="h3">Resultado OCR</Card.Title>
+              <div
+                style={{
+                  whiteSpace: "pre-wrap",
+                  overflowY: "auto",
+                  maxHeight: "300px",
+                  border: "1px solid #ccc",
+                  padding: "10px",
+                  backgroundColor: "#f9f9f9",
+                }}
+              >
+                {ocrResult.ocr_result.split("\n").map((line, index) => (
+                  <div key={index}>{line}</div>
+                ))}
+              </div>
+            </Card.Body>
+          </Card>
+        )}
 
         <Card>
           <Card.Body>
