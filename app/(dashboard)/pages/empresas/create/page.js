@@ -3,7 +3,15 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import InputMask from "react-input-mask"; // Importa a biblioteca de máscara
-import { Col, Row, Container, Form, Button, Card } from "react-bootstrap";
+import {
+  Col,
+  Row,
+  Container,
+  Form,
+  Button,
+  Card,
+  Alert,
+} from "react-bootstrap";
 import { Save, Briefcase } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -17,13 +25,14 @@ import { validationSchemaEmpresa } from "utils/validations";
 import ErrorMessage from "sub-components/ErrorMessage";
 
 import { useSession } from "next-auth/react";
+
 const Empresas = () => {
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(!!id);
   const [loading, setLoading] = useState(false); // State for loading button
 
-  const { data: session, status } = useSession({ required: true });
+  const { data: session, status } = useSession();
 
   const [formData, setFormData] = useState({
     cnpj: "",
@@ -38,13 +47,32 @@ const Empresas = () => {
     email: "",
     inscricao_estadual: "",
     user_id: "",
+    cliente: "",
   });
 
   const [errors, setErrors] = useState({});
   const [clientes, setClientes] = useState([]);
 
+  const [cnpjConsulta, setCnpjConsulta] = useState("");
+  const [cnpjData, setCnpjData] = useState(null);
+  const [loadingCnpj, setLoadingCnpj] = useState(false);
+
+  const formatCnpj = (cnpj) => {
+    return cnpj.replace(
+      /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
+      "$1.$2.$3/$4-$5"
+    );
+  };
+
+  const formatCep = (cep) => {
+    return cep.replace(/^(\d{5})(\d{3})$/, "$1-$2");
+  };
+
+  const formatPhone = (phone) => {
+    return phone.replace(/^(\d{2})(\d{4,5})(\d{4})$/, "($1) $2-$3");
+  };
+
   useEffect(() => {
-    fetchClientes(session.user.pk).then((data) => setClientes(data));
     if (id) {
       fetchEmpresaById(id)
         .then((data) => {
@@ -107,8 +135,57 @@ const Empresas = () => {
         ...prevState,
         user_id: session.user.pk, // Atualize o user_id no estado
       }));
+      fetchClientes(session.user.pk).then((data) => setClientes(data));
     }
   }, [session, status]);
+
+  const handleCnpjConsulta = async () => {
+    if (!cnpjConsulta) {
+      toast.error("Por favor, insira um CNPJ válido.", { autoClose: 2000 });
+      return;
+    }
+
+    // Remove pontos, traços e barras do CNPJ
+    const cleanedCnpj = cnpjConsulta.replace(/[.-\/]/g, "");
+
+    setLoadingCnpj(true);
+    try {
+      const response = await fetch(
+        `https://brasilapi.com.br/api/cnpj/v1/${cleanedCnpj}`
+      );
+      const data = await response.json();
+      setCnpjData(data);
+    } catch (error) {
+      console.error("Erro ao consultar CNPJ:", error);
+      toast.error("Ocorreu um erro ao consultar o CNPJ.", { autoClose: 2000 });
+    } finally {
+      setLoadingCnpj(false);
+    }
+  };
+
+  const handleCopyToForm = () => {
+    if (cnpjData) {
+      const formattedCnpj = formatCnpj(cnpjData.cnpj);
+      const formattedCep = formatCep(cnpjData.cep);
+      const formattedPhone = formatPhone(cnpjData.ddd_telefone_1);
+
+      setFormData({
+        ...formData,
+        cnpj: formattedCnpj,
+        nome_razao: cnpjData.razao_social,
+        nome_fantasia: cnpjData.nome_fantasia,
+        endereco: cnpjData.logradouro,
+        bairro: cnpjData.bairro,
+        cidade: cnpjData.municipio,
+        estado: cnpjData.uf,
+        cep: formattedCep,
+        telefone: formattedPhone,
+        email: cnpjData.email,
+        inscricao_estadual: cnpjData.inscricao_estadual,
+      });
+      toast.success("Dados copiados para o formulário.", { autoClose: 2000 });
+    }
+  };
 
   return (
     <Container fluid className="p-6">
@@ -120,6 +197,59 @@ const Empresas = () => {
             <Briefcase />
             {isEditing ? "Edição de empresas" : "Cadastro de empresas"}
           </Card.Title>
+
+          <div className="py-2">
+            <Form.Group className="mb-3">
+              <Form.Label>Consultar CNPJ</Form.Label>
+              <InputMask
+                mask="99.999.999/9999-99"
+                value={cnpjConsulta}
+                onChange={(e) => setCnpjConsulta(e.target.value)}
+              >
+                {(inputProps) => (
+                  <Form.Control
+                    {...inputProps}
+                    type="text"
+                    placeholder="Digite o CNPJ"
+                  />
+                )}
+              </InputMask>
+              <Button
+                variant="primary"
+                className="mt-2"
+                onClick={handleCnpjConsulta}
+                disabled={loadingCnpj}
+              >
+                {loadingCnpj ? "Consultando..." : "Consultar"}
+              </Button>
+            </Form.Group>
+
+            {cnpjData && (
+              <Alert variant="info" className="mt-3">
+                <Alert.Heading>Dados do CNPJ</Alert.Heading>
+                <div>
+                  <strong>CNPJ:</strong> {cnpjData.cnpj}
+                </div>
+                <div>
+                  <strong>Razão Social:</strong> {cnpjData.razao_social}
+                </div>
+                <div>
+                  <strong>Nome Fantasia:</strong> {cnpjData.nome_fantasia}
+                </div>
+                <div>
+                  <strong>Telefone:</strong> {cnpjData.ddd_telefone_1}
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={handleCopyToForm}
+                  className="mt-3"
+                >
+                  Copiar para o formulário
+                </Button>
+              </Alert>
+            )}
+          </div>
+
           <div className="py-2">
             <Form onSubmit={handleSubmit}>
               {/* Hidden input field for session.user.pk */}
@@ -201,7 +331,7 @@ const Empresas = () => {
                       onChange={handleChange}
                       isInvalid={!!errors.cliente}
                     >
-                      <option value="">Selecione uma empresa</option>
+                      <option value="">Selecione uma Proprietário</option>
                       {clientes.map((cliente) => (
                         <option key={cliente.id} value={cliente.id}>
                           {cliente.nome}

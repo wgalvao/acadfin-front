@@ -54,7 +54,10 @@ export const validationSchemaEmpresa = z.object({
   telefone: z.string().regex(phoneRegex, {
     message: "Número de telefone inválido, formato esperado: (00) 0000-0000",
   }),
-  email: z.string().email({ message: "Email inválido" }),
+  // email: z.string().email({ message: "Email inválido" }),
+  // cliente: z.string().min(3, {
+  //   message: "Proprietário é obrigatório e deve ter pelo menos 3 caracteres",
+  // }),
   inscricao_estadual: z.string().optional(),
 });
 
