@@ -6,10 +6,10 @@ import Link from "next/link";
 import { useState } from "react";
 // import hooks
 import useMounted from "hooks/useMounted";
-import { authenticateAndFetchData } from "@/lib/auth";
 import { useRouter } from "next/navigation"; // Import useRouter for navigation
 
 import { signIn } from "next-auth/react";
+
 const SignIn = () => {
   const router = useRouter();
   const hasMounted = useMounted();
@@ -24,24 +24,21 @@ const SignIn = () => {
     setError(""); // Reset error message
 
     try {
-      // Passo 1: Autenticação e obtenção dos tokens
-      // const { access, refresh, id, name } = await authenticateAndFetchData(
-      //   username,
-      //   password
-      // );
       const result = await signIn("credentials", {
         username: username,
         password: password,
         redirect: false,
         callbackUrl: "/",
       });
-      console.log(result);
-      if (result.ok) {
+
+      if (result.error) {
+        setError("Usuário ou senha inválidos. Por favor, tente novamente.");
+      } else if (result.ok) {
         router.push("/");
       }
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "Ocorreu um erro inesperado"
       );
     } finally {
       setIsLoading(false);
@@ -129,7 +126,7 @@ const SignIn = () => {
                         href="/authentication/forget-password"
                         className="text-inherit fs-5"
                       >
-                        Esqueci minha senha?
+                        {/* Esqueci minha senha? */}
                       </Link>
                     </div>
                   </div>
