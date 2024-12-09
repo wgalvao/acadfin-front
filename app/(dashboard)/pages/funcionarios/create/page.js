@@ -202,9 +202,11 @@ const Funcionarios = () => {
         {/* Campo de upload de imagem */}
         <Card className="mb-4">
           <Card.Body>
-            <Card.Title as="h3">Upload de Documento</Card.Title>
+            <Card.Title as="h4">Envio de Documento</Card.Title>
             <Form.Group>
-              <Form.Label>Selecione uma imagem</Form.Label>
+              <Form.Label>
+                Envie um documento para acelerar o preenchimento do formulário
+              </Form.Label>
               <Form.Control type="file" onChange={handleImageUpload} />
             </Form.Group>
           </Card.Body>
@@ -214,7 +216,7 @@ const Funcionarios = () => {
         {ocrResult && (
           <Card className="mb-4">
             <Card.Body>
-              <Card.Title as="h3">Resultado OCR</Card.Title>
+              <Card.Title as="h4">Resultado OCR</Card.Title>
               <div
                 style={{
                   whiteSpace: "pre-wrap",

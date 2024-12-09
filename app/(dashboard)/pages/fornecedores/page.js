@@ -118,7 +118,7 @@ const Fornecedores = () => {
                           }}
                           onClick={() => handleDetailsClick(fornecedor)}
                         >
-                          {fornecedor.pessoa_id}
+                          {fornecedor.nome}
                         </span>
                       </td>
                       <td>{new Date(fornecedor.desde).toLocaleDateString()}</td>
@@ -176,7 +176,7 @@ const ModalDetails = ({ show, onHide, fornecedor }) => {
         {fornecedor ? (
           <div>
             <p>
-              <strong>Pessoa:</strong> {fornecedor.pessoa_id}
+              <strong>Pessoa:</strong> {fornecedor.nome}
             </p>
             <p>
               <strong>Desde:</strong>{" "}

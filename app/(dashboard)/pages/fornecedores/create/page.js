@@ -24,7 +24,7 @@ const FornecedorForm = () => {
   const { data: session, status } = useSession({ required: true });
 
   const [formData, setFormData] = useState({
-    pessoa_id: "",
+    nome: "",
     desde: "",
     observacao: "",
     user_id: "",
@@ -135,14 +135,14 @@ const FornecedorForm = () => {
                   <Form.Group className="mb-3">
                     <Form.Label>Pessoa</Form.Label>
                     <Form.Control
-                      type="number"
-                      name="pessoa_id"
+                      type="text"
+                      name="nome"
                       placeholder="Digite o nome da pessoa"
-                      value={formData.pessoa_id}
+                      value={formData.nome}
                       onChange={handleChange}
-                      isInvalid={!!errors.pessoa_id}
+                      isInvalid={!!errors.nome}
                     />
-                    <ErrorMessage message={errors.pessoa_id} />
+                    <ErrorMessage message={errors.nome} />
                   </Form.Group>
 
                   <Form.Group className="mb-3">
