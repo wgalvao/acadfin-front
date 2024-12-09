@@ -77,7 +77,9 @@ const Home = () => {
           <Col lg={12}>
             {/* Cabeçalho da página */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h3 className="mb-0 text-white">Dashboard</h3>
+              <h3 className="mb-0 text-white">
+                Dashboard de {session.user.username}
+              </h3>
               <Link href="#" className="btn btn-white">
                 ...
               </Link>

@@ -74,20 +74,28 @@ export const DashboardMenu = [
       // { id: uuid(), link: "/pages/pricing", name: "Histórico" },
     ],
   },
-  // {
-  //   id: uuid(),
-  //   title: "Authentication",
-  //   icon: "lock",
-  //   children: [
-  //     { id: uuid(), link: "/authentication/sign-in", name: "Sign In" },
-  //     { id: uuid(), link: "/authentication/sign-up", name: "Sign Up" },
-  //     {
-  //       id: uuid(),
-  //       link: "/authentication/forget-password",
-  //       name: "Forget Password",
-  //     },
-  //   ],
-  // },
+  {
+    id: uuid(),
+    title: "Contabilidade",
+    grouptitle: true,
+  },
+  {
+    id: uuid(),
+    title: "Calculos",
+    icon: "lock",
+    children: [{ id: uuid(), link: "#", name: "Décimo terceiro" }],
+  },
+  {
+    id: uuid(),
+    title: "Tutorial",
+    grouptitle: true,
+  },
+  {
+    id: uuid(),
+    title: "Tutorial",
+    icon: "download",
+    link: "#",
+  },
   // {
   //   id: uuid(),
   //   title: "Layouts",
@@ -182,7 +190,7 @@ export const DashboardMenu = [
   // },
   // {
   //   id: uuid(),
-  //   title: "Tutorial",
+  //   title: "Download",
   //   icon: "download",
   //   link: "https://codescandy.gumroad.com/l/dashui-nextjs",
   // },
