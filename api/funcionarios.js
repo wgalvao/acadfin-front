@@ -41,9 +41,11 @@ export const fetchFuncionariosByEmpresa = async (empresaId) => {
   }
 };
 
-export const getchSalarioByFuncionario = async (funId) => {
+export const fetchSalarioByFuncionario = async (funId) => {
   try {
-    const response = await fetch(`${BASE_URL}${funId}/salario`);
+    const response = await fetch(
+      `${BASE_URL}${funId}/salario-meses-trabalhados`
+    );
     if (!response.ok) {
       throw new Error("Erro ao buscar funcionário");
     }

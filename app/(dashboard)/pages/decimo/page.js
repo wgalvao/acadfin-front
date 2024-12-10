@@ -3,9 +3,35 @@
 import { useState, useEffect } from "react";
 import { Row, Col, Card, Form, Button, InputGroup } from "react-bootstrap";
 import { fetchEmpresas } from "@/api/empresas";
-import { fetchFuncionariosByEmpresa } from "@/api/funcionarios";
+import {
+  fetchFuncionariosByEmpresa,
+  fetchSalarioByFuncionario,
+} from "@/api/funcionarios";
 import { useSession } from "next-auth/react";
 import LoadingSpinner from "sub-components/crud/Spinner";
+
+const faixas = [
+  {
+    min: 100.0,
+    max: 2826.65,
+    percentual: 7.5,
+  },
+  {
+    min: 2826.65,
+    max: 3751.05,
+    percentual: 15,
+  },
+  {
+    min: 3751.06,
+    max: 4664.68,
+    percentual: 22.5,
+  },
+  {
+    min: 4664.68,
+    max: null,
+    percentual: 27.5,
+  },
+];
 
 const DecimoTerceiro = () => {
   const [empresas, setEmpresas] = useState([]);
@@ -14,6 +40,7 @@ const DecimoTerceiro = () => {
   const [selectedFuncionario, setSelectedFuncionario] = useState("");
   const [salario, setSalario] = useState("");
   const [taxaPercentual, setTaxaPercentual] = useState("");
+  const [mesesTrabalhados, setMesesTrabalhados] = useState("");
   const [isIntegral, setIsIntegral] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -44,6 +71,34 @@ const DecimoTerceiro = () => {
     }
   };
 
+  const loadSalario = async (id) => {
+    setLoading(true);
+    try {
+      const data = await fetchSalarioByFuncionario(id);
+      setSalario(data.salario);
+      setMesesTrabalhados(data.meses_trabalhados); // Adicione esta linha
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculatePercentual = (salario) => {
+    for (const faixa of faixas) {
+      if (faixa.max === null) {
+        if (salario >= faixa.min) {
+          return faixa.percentual;
+        }
+      } else {
+        if (salario >= faixa.min && salario <= faixa.max) {
+          return faixa.percentual;
+        }
+      }
+    }
+    return 0; // Caso o salário não esteja em nenhuma faixa
+  };
+
   useEffect(() => {
     // Só carrega os dados se a sessão estiver autenticada
     if (status === "authenticated") {
@@ -56,6 +111,19 @@ const DecimoTerceiro = () => {
       loadFuncionarios(selectedEmpresa);
     }
   }, [selectedEmpresa]);
+
+  useEffect(() => {
+    if (selectedFuncionario) {
+      loadSalario(selectedFuncionario);
+    }
+  }, [selectedFuncionario]);
+
+  useEffect(() => {
+    if (salario) {
+      const percentual = calculatePercentual(salario);
+      setTaxaPercentual(percentual);
+    }
+  }, [salario]);
 
   if (status === "loading") {
     return <LoadingSpinner />;
@@ -77,6 +145,7 @@ const DecimoTerceiro = () => {
     console.log("Funcionário selecionado:", selectedFuncionario);
     console.log("Salário:", salario);
     console.log("Taxa Percentual:", taxaPercentual);
+    console.log("Meses Trabalhados:", mesesTrabalhados);
     console.log("É integral?", isIntegral);
   };
 
@@ -152,9 +221,20 @@ const DecimoTerceiro = () => {
                           value={taxaPercentual}
                           onChange={(e) => setTaxaPercentual(e.target.value)}
                           required
+                          readOnly // Torna o campo somente leitura
                         />
                         <InputGroup.Text>%</InputGroup.Text>
                       </InputGroup>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                      <Form.Label>Meses Trabalhados</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={mesesTrabalhados}
+                        onChange={(e) => setMesesTrabalhados(e.target.value)}
+                        required
+                      />
                     </Form.Group>
 
                     <Form.Group className="mb-3">
