@@ -47,7 +47,7 @@ export const DashboardMenu = [
       { id: uuid(), link: "/pages/centro-custo", name: "Centro de custos" },
       { id: uuid(), link: "/pages/cargos", name: "Cargos" },
       { id: uuid(), link: "/pages/funcoes", name: "Função" },
-      { id: uuid(), link: "/pages/jornadas", name: "Jornada" },
+      // { id: uuid(), link: "/pages/jornadas", name: "Jornada" },
       { id: uuid(), link: "/pages/baseCalculo", name: "Base de cálculo" },
       // { id: uuid(), link: "/not-found", name: "404 Error" },
     ],

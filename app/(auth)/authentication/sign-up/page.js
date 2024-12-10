@@ -65,8 +65,18 @@ const SignUp = () => {
       }
       // If successful, redirect to the home page
     } catch (error) {
-      // Handle unexpected errors
-      setErrors({ general: error.message });
+      let errorMessage = "Ocorreu um erro inesperado.";
+
+      // Verifica se error.response está disponível
+      if (error.response && error.response.data) {
+        errorMessage =
+          error.response.data.message || JSON.stringify(error.response.data);
+      } else if (error.message) {
+        // Usa a mensagem do erro, se disponível
+        errorMessage = error.message;
+      }
+
+      setErrors({ general: errorMessage });
       setIsLoading(false);
     }
   };
