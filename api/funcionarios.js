@@ -28,6 +28,32 @@ export const fetchFuncionarioById = async (id) => {
   }
 };
 
+export const fetchFuncionariosByEmpresa = async (empresaId) => {
+  try {
+    const response = await fetch(`${BASE_URL}empresa/${empresaId}/`);
+    if (!response.ok) {
+      throw new Error("Erro ao buscar funcionário");
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Erro ao buscar funcionário:", error);
+    throw error;
+  }
+};
+
+export const getchSalarioByFuncionario = async (funId) => {
+  try {
+    const response = await fetch(`${BASE_URL}${funId}/salario`);
+    if (!response.ok) {
+      throw new Error("Erro ao buscar funcionário");
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Erro ao buscar funcionário:", error);
+    throw error;
+  }
+};
+
 // Função para criar um novo funcionário
 // export const createFuncionario = async (data) => {
 //   try {

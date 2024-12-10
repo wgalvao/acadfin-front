@@ -83,7 +83,7 @@ export const DashboardMenu = [
     id: uuid(),
     title: "Calculos",
     icon: "lock",
-    children: [{ id: uuid(), link: "#", name: "Décimo terceiro" }],
+    children: [{ id: uuid(), link: "/pages/decimo", name: "Décimo terceiro" }],
   },
   {
     id: uuid(),
