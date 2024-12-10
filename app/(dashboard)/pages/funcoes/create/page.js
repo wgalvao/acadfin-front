@@ -6,7 +6,7 @@ import { Save, Briefcase } from "lucide-react";
 import { PageHeading } from "widgets";
 import { validationSchemaFuncao } from "utils/validations"; // Assume-se que validationSchemaFuncao está definido para validar campos de função
 import ErrorMessage from "sub-components/ErrorMessage";
-import { useAuthState } from "@/lib/auth";
+import { useSession, signOut } from "next-auth/react";
 import { fetchFuncaoById, createFuncao, updateFuncao } from "@/api/funcoes";
 import { fetchEmpresas } from "@/api/empresas"; // Assume-se que fetchEmpresas está definido para buscar empresas
 import { ToastContainer, toast } from "react-toastify";
@@ -15,8 +15,7 @@ import "react-toastify/dist/ReactToastify.css";
 const FuncaoForm = () => {
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
-  const { getUserData } = useAuthState();
-  const session = getUserData();
+  const { data: session, status } = useSession({ required: true });
   const [isCreating, setIsCreating] = useState(!id);
   const [loading, setLoading] = useState(false); // State for loading button
 
@@ -31,7 +30,7 @@ const FuncaoForm = () => {
     codva: "",
     codvp: "",
     codvt: "",
-    user_id: session.id,
+    user_id: "",
   });
   const [errors, setErrors] = useState({});
   const [empresas, setEmpresas] = useState([]);
@@ -102,6 +101,15 @@ const FuncaoForm = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.pk) {
+      setFormData((prevState) => ({
+        ...prevState,
+        user_id: session.user.pk, // Atualize o user_id no estado
+      }));
+    }
+  }, [session, status]);
+
   return (
     <Container fluid className="p-6">
       <PageHeading heading="Funções" />
@@ -116,7 +124,11 @@ const FuncaoForm = () => {
               <div className="py-2">
                 <Form onSubmit={handleSubmit}>
                   {/* Hidden input field for session.id */}
-                  <input type="hidden" name="user_id" value={session.id} />
+                  <input
+                    type="hidden"
+                    name="user_id"
+                    value={session?.user?.pk}
+                  />
 
                   {/* Form fields */}
                   <Form.Group className="mb-3">

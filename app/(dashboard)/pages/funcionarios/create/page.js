@@ -8,6 +8,7 @@ import { Col, Row, Container, Form, Button, Card } from "react-bootstrap";
 import { Save, BookMarked } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useSession, signOut } from "next-auth/react";
 
 // import sub components
 import { PricingCard, PageHeading, FeatureLeftTopIcon } from "widgets";
@@ -16,6 +17,10 @@ import {
   updateFuncionario,
   fetchFuncionarioById,
 } from "@/api/funcionarios";
+
+import { fetchEmpresas } from "api/empresas";
+import { fetchCargos } from "api/cargos";
+
 import estados from "data/Estados";
 import { validationSchema } from "utils/validations";
 import ErrorMessage from "sub-components/ErrorMessage";
@@ -38,6 +43,8 @@ const formatDateToSubmit = (dateString) => {
 };
 
 const Funcionarios = () => {
+  const { data: session, status } = useSession();
+
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(!!id);
@@ -64,9 +71,13 @@ const Funcionarios = () => {
     bairro: "",
     cidade: "",
     email: "",
+    user_id: "",
   });
 
   const [errors, setErrors] = useState({});
+  const [empresas, setEmpresas] = useState([]);
+  const [cargos, setCargos] = useState([]);
+  const [ocrResult, setOcrResult] = useState(null);
 
   useEffect(() => {
     if (id) {
@@ -136,372 +147,498 @@ const Funcionarios = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  return (
-    <Container fluid className="p-6">
-      {/* Page Heading */}
-      <PageHeading heading="Funcionários" />
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.pk) {
+      setFormData((prevState) => ({
+        ...prevState,
+        user_id: session.user.pk, // Atualize o user_id no estado
+      }));
+      fetchEmpresas(session.user.pk).then((data) => setEmpresas(data));
+      fetchCargos(session.user.pk).then((dataCargos) => setCargos(dataCargos));
+    }
+  }, [session, status]);
 
-      <Card>
-        <Card.Body>
-          <Card.Title as="h3">
-            <BookMarked />
-            {isEditing
-              ? " Edição de funcionários"
-              : " Cadastro de funcionários"}
-          </Card.Title>
-          <div className="py-2">
-            <Form onSubmit={handleSubmit}>
-              {/* Dados Gerais */}
-              <Card.Title as="h4">Dados Gerais</Card.Title>
-              <Row>
-                <Col md={8}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Nome Completo</Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Digite o nome completo"
-                      name="nome"
-                      value={formData.nome}
-                      onChange={handleChange}
-                      isInvalid={!!errors.nome} // Exibe erro se houver
-                    />
-                    <ErrorMessage message={errors.nome} />
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Estado Civil</Form.Label>
-                    <Form.Control
-                      as="select"
-                      name="estado_civil"
-                      value={formData.estado_civil}
-                      onChange={handleChange}
-                    >
-                      <option value="">Selecione o estado civil</option>
-                      <option value="solteiro">Solteiro</option>
-                      <option value="casado">Casado</option>
-                      <option value="divorciado">Divorciado</option>
-                      <option value="viuvo">Viúvo</option>
-                      <option value="uniao_estavel">União estável</option>
-                    </Form.Control>
-                  </Form.Group>
-                </Col>
-              </Row>
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      console.error("Nenhum arquivo selecionado.");
+      return;
+    }
 
-              <Row>
-                {/* // Dentro do JSX do componente */}
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Data de Início</Form.Label>
-                    <Form.Control
-                      type="date"
-                      name="data_nasc"
-                      value={formData.data_nasc}
-                      onChange={handleChange}
-                      isInvalid={!!errors.data_nasc}
-                    />
-                    <ErrorMessage message={errors.data_nasc} />
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Idade</Form.Label>
-                    <Form.Control
-                      type="number"
-                      placeholder="Digite a idade"
-                      name="idade"
-                      value={formData.idade}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Sexo</Form.Label>
-                    <Form.Control
-                      as="select"
-                      name="sexo"
-                      value={formData.sexo}
-                      onChange={handleChange}
-                    >
-                      <option value="">Selecione</option>
-                      <option value="M">Masculino</option>
-                      <option value="F">Feminino</option>
-                    </Form.Control>
-                  </Form.Group>
-                </Col>
-              </Row>
+    const formData = new FormData();
+    formData.append("file", file);
 
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Escolaridade</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="escolaridade"
-                      placeholder="Digite a escolaridade"
-                      value={formData.escolaridade}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Naturalidade</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="naturalidade"
-                      placeholder="Digite a naturalidade"
-                      value={formData.naturalidade}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
+    try {
+      const response = await fetch("http://127.0.0.1:5000/ocr", {
+        method: "POST",
+        body: formData,
+      });
 
-              {/* Documentação */}
-              {/* <h5 className="mt-4">Documentação</h5> */}
-              <Card.Title as="h4">Documentação</Card.Title>
-              <Row>
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>CPF</Form.Label>
-                    <InputMask
-                      mask="999.999.999-99"
-                      value={formData.cpf}
-                      onChange={handleChange}
-                    >
-                      {(inputProps) => (
-                        <Form.Control
-                          {...inputProps}
-                          type="text"
-                          placeholder="Digite o CPF"
-                          name="cpf"
-                          isInvalid={!!errors.cpf}
-                        />
-                      )}
-                    </InputMask>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.cpf}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>PIS</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="pis"
-                      placeholder="Digite o PIS"
-                      value={formData.pis}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Identidade</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="identidade"
-                      placeholder="Digite a identidade"
-                      value={formData.identidade}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
 
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>CTPS</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="ctps"
-                      placeholder="Digite o CTPS"
-                      value={formData.ctps}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Série</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="serie"
-                      placeholder="Digite a série"
-                      value={formData.serie}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
+      if (response.ok) {
+        const result = await response.json();
+        console.log("OCR Result:", result);
+        setOcrResult(result);
+        toast.success("Imagem processada com sucesso!", { autoClose: 2000 });
+      } else {
+        const errorText = await response.text();
+        console.error("Erro ao processar a imagem:", errorText);
+        toast.error("Erro ao processar a imagem.", { autoClose: 2000 });
+      }
+    } catch (error) {
+      console.error("Erro ao enviar a imagem:", error);
+      toast.error("Erro ao enviar a imagem.", { autoClose: 2000 });
+    }
+  };
 
-              {/* Endereço e Contato */}
-              {/* <h5 className="mt-4">Endereço e Contato</h5>*/}
-              <Card.Title as="h4">Endereço e Contato</Card.Title>
-              <Row>
-                <Col md={8}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Endereço</Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Digite o endereço"
-                      name="endereco"
-                      value={formData.endereco}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Bairro</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="bairro"
-                      placeholder="Digite o bairro"
-                      value={formData.bairro}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
+  if (session) {
+    return (
+      <Container fluid className="p-6">
+        {/* Page Heading */}
+        <PageHeading heading="Funcionários" />
 
-              <Row>
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Cidade</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="cidade"
-                      placeholder="Digite a cidade"
-                      value={formData.cidade}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Estado</Form.Label>
-                    <Form.Control
-                      as="select"
-                      name="estado"
-                      value={formData.estado}
-                      onChange={handleChange}
-                      isInvalid={!!errors.estado} // Exibe erro se houver
-                    >
-                      <option value="">Selecione o estado</option>
-                      {estados.map((estado) => (
-                        <option key={estado} value={estado}>
-                          {estado}
-                        </option>
-                      ))}
-                    </Form.Control>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.estado}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
+        {/* Campo de upload de imagem */}
+        <Card className="mb-4">
+          <Card.Body>
+            <Card.Title as="h4">Envio de Documento</Card.Title>
+            <Form.Group>
+              <Form.Label>
+                Envie um documento para acelerar o preenchimento do formulário
+              </Form.Label>
+              <Form.Control type="file" onChange={handleImageUpload} />
+            </Form.Group>
+          </Card.Body>
+        </Card>
 
-                {/* <Col md={4}>
+        {/* Exibir resultado JSON */}
+        {ocrResult && (
+          <Card className="mb-4">
+            <Card.Body>
+              <Card.Title as="h4">Resultado OCR</Card.Title>
+              <div
+                style={{
+                  whiteSpace: "pre-wrap",
+                  overflowY: "auto",
+                  maxHeight: "300px",
+                  border: "1px solid #ccc",
+                  padding: "10px",
+                  backgroundColor: "#f9f9f9",
+                }}
+              >
+                {ocrResult.ocr_result.split("\n").map((line, index) => (
+                  <div key={index}>{line}</div>
+                ))}
+              </div>
+            </Card.Body>
+          </Card>
+        )}
+
+        <Card>
+          <Card.Body>
+            <Card.Title as="h3">
+              <BookMarked />
+              {isEditing
+                ? " Edição de funcionários"
+                : " Cadastro de funcionários"}
+            </Card.Title>
+            <div className="py-2">
+              <Form onSubmit={handleSubmit}>
+                {/* Dados Gerais */}
+                {/* Hidden input field for session.id */}
+                <input type="hidden" name="user_id" value={session?.user?.pk} />
+                <Card.Title as="h4">Dados Gerais</Card.Title>
+                <Row>
+                  <Col md={8}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Nome Completo</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Digite o nome completo"
+                        name="nome"
+                        value={formData.nome}
+                        onChange={handleChange}
+                        isInvalid={!!errors.nome} // Exibe erro se houver
+                      />
+                      <ErrorMessage message={errors.nome} />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Estado Civil</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="estado_civil"
+                        value={formData.estado_civil}
+                        onChange={handleChange}
+                      >
+                        <option value="">Selecione o estado civil</option>
+                        <option value="solteiro">Solteiro</option>
+                        <option value="casado">Casado</option>
+                        <option value="divorciado">Divorciado</option>
+                        <option value="viuvo">Viúvo</option>
+                        <option value="uniao_estavel">União estável</option>
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  {/* // Dentro do JSX do componente */}
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Data de Início</Form.Label>
+                      <Form.Control
+                        type="date"
+                        name="data_nasc"
+                        value={formData.data_nasc}
+                        onChange={handleChange}
+                        isInvalid={!!errors.data_nasc}
+                      />
+                      <ErrorMessage message={errors.data_nasc} />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Idade</Form.Label>
+                      <Form.Control
+                        type="number"
+                        placeholder="Digite a idade"
+                        name="idade"
+                        value={formData.idade}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Sexo</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="sexo"
+                        value={formData.sexo}
+                        onChange={handleChange}
+                      >
+                        <option value="">Selecione</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Escolaridade</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="escolaridade"
+                        placeholder="Digite a escolaridade"
+                        value={formData.escolaridade}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Naturalidade</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="naturalidade"
+                        placeholder="Digite a naturalidade"
+                        value={formData.naturalidade}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                {/* Documentação */}
+                {/* <h5 className="mt-4">Documentação</h5> */}
+                <Card.Title as="h4">Vínculo</Card.Title>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Empresa</Form.Label>
+                      <Form.Select
+                        name="empresa"
+                        value={formData.empresa}
+                        onChange={handleChange}
+                        isInvalid={!!errors.empresa}
+                      >
+                        <option value="">Selecione uma empresa</option>
+                        {empresas.map((empresa) => (
+                          <option key={empresa.id} value={empresa.id}>
+                            {empresa.nome_razao}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <ErrorMessage message={errors.empresa} />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Cargo</Form.Label>
+                      <Form.Select
+                        name="cargo"
+                        value={formData.cargo}
+                        onChange={handleChange}
+                        isInvalid={!!errors.cargo}
+                      >
+                        <option value="">Selecione um cargo</option>
+                        {cargos.map((cargo) => (
+                          <option key={cargo.id} value={cargo.id}>
+                            {cargo.cargo}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <ErrorMessage message={errors.empresa} />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Card.Title as="h4">Documentação</Card.Title>
+                <Row>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>CPF</Form.Label>
+                      <InputMask
+                        mask="999.999.999-99"
+                        value={formData.cpf}
+                        onChange={handleChange}
+                      >
+                        {(inputProps) => (
+                          <Form.Control
+                            {...inputProps}
+                            type="text"
+                            placeholder="Digite o CPF"
+                            name="cpf"
+                            isInvalid={!!errors.cpf}
+                          />
+                        )}
+                      </InputMask>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.cpf}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>PIS</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="pis"
+                        placeholder="Digite o PIS"
+                        value={formData.pis}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Identidade</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="identidade"
+                        placeholder="Digite a identidade"
+                        value={formData.identidade}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>CTPS</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="ctps"
+                        placeholder="Digite o CTPS"
+                        value={formData.ctps}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Série</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="serie"
+                        placeholder="Digite a série"
+                        value={formData.serie}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                {/* Endereço e Contato */}
+                {/* <h5 className="mt-4">Endereço e Contato</h5>*/}
+                <Card.Title as="h4">Endereço e Contato</Card.Title>
+                <Row>
+                  <Col md={8}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Endereço</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Digite o endereço"
+                        name="endereco"
+                        value={formData.endereco}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Bairro</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="bairro"
+                        placeholder="Digite o bairro"
+                        value={formData.bairro}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Cidade</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="cidade"
+                        placeholder="Digite a cidade"
+                        value={formData.cidade}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Estado</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="estado"
+                        value={formData.estado}
+                        onChange={handleChange}
+                        isInvalid={!!errors.estado} // Exibe erro se houver
+                      >
+                        <option value="">Selecione o estado</option>
+                        {estados.map((estado) => (
+                          <option key={estado} value={estado}>
+                            {estado}
+                          </option>
+                        ))}
+                      </Form.Control>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.estado}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+
+                  {/* <Col md={4}>
                   <Form.Group className="mb-3">
                     <Form.Label>CEP</Form.Label>
                     <Form.Control type="text" placeholder="Digite o CEP" />
                   </Form.Group>
                 </Col> */}
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>CEP</Form.Label>
-                    <InputMask
-                      mask="99999-999"
-                      value={formData.cep}
-                      onChange={handleChange}
-                    >
-                      {(inputProps) => (
-                        <Form.Control
-                          {...inputProps}
-                          type="text"
-                          placeholder="Digite o celular"
-                          name="cep"
-                          isInvalid={!!errors.cep}
-                        />
-                      )}
-                    </InputMask>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.cep}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
-              </Row>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>CEP</Form.Label>
+                      <InputMask
+                        mask="99999-999"
+                        value={formData.cep}
+                        onChange={handleChange}
+                      >
+                        {(inputProps) => (
+                          <Form.Control
+                            {...inputProps}
+                            type="text"
+                            placeholder="Digite o celular"
+                            name="cep"
+                            isInvalid={!!errors.cep}
+                          />
+                        )}
+                      </InputMask>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.cep}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-              <Row>
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Telefone</Form.Label>
-                    <InputMask
-                      mask="(99) 9999-9999"
-                      name="telefone"
-                      value={formData.telefone}
-                      onChange={handleChange}
-                    >
-                      {(inputProps) => (
-                        <Form.Control
-                          {...inputProps}
-                          type="text"
-                          placeholder="Digite o telefone"
-                          name="telefone"
-                          isInvalid={!!errors.telefone}
-                        />
-                      )}
-                    </InputMask>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.telefone}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Celular</Form.Label>
-                    <InputMask
-                      type="text"
-                      mask="(99) 99999-9999"
-                      name="celular"
-                      value={formData.celular}
-                      onChange={handleChange}
-                    >
-                      {(inputProps) => (
-                        <Form.Control
-                          {...inputProps}
-                          type="text"
-                          name="celular"
-                          placeholder="Digite o celular"
-                          isInvalid={!!errors.celular}
-                        />
-                      )}
-                    </InputMask>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.celular}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
-              </Row>
+                <Row>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Telefone</Form.Label>
+                      <InputMask
+                        mask="(99) 9999-9999"
+                        name="telefone"
+                        value={formData.telefone}
+                        onChange={handleChange}
+                      >
+                        {(inputProps) => (
+                          <Form.Control
+                            {...inputProps}
+                            type="text"
+                            placeholder="Digite o telefone"
+                            name="telefone"
+                            isInvalid={!!errors.telefone}
+                          />
+                        )}
+                      </InputMask>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.telefone}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Celular</Form.Label>
+                      <InputMask
+                        type="text"
+                        mask="(99) 99999-9999"
+                        name="celular"
+                        value={formData.celular}
+                        onChange={handleChange}
+                      >
+                        {(inputProps) => (
+                          <Form.Control
+                            {...inputProps}
+                            type="text"
+                            name="celular"
+                            placeholder="Digite o celular"
+                            isInvalid={!!errors.celular}
+                          />
+                        )}
+                      </InputMask>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.celular}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Email</Form.Label>
-                    <Form.Control
-                      type="email"
-                      name="email"
-                      placeholder="Digite o email"
-                      value={formData.email}
-                      onChange={handleChange}
-                    />
-                  </Form.Group>
-                </Col>
-                {/* <Col md={6}>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Email</Form.Label>
+                      <Form.Control
+                        type="email"
+                        name="email"
+                        placeholder="Digite o email"
+                        value={formData.email}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  {/* <Col md={6}>
                   <Form.Group className="mb-3">
                     <Form.Label>Naturalidade</Form.Label>
                     <Form.Control
@@ -510,40 +647,42 @@ const Funcionarios = () => {
                     />
                   </Form.Group>
                 </Col> */}
-              </Row>
-              <div className="d-grid gap-2">
-                <Button
-                  className="mb-3"
-                  variant="success"
-                  size="lg"
-                  type="submit"
-                  disabled={loading} // Disable button when loading
-                >
-                  {loading ? (
-                    <>
-                      <span
-                        className="spinner-border spinner-border-sm"
-                        role="status"
-                        aria-hidden="true"
-                      ></span>{" "}
-                      Carregando...
-                    </>
-                  ) : (
-                    <>
-                      <Save /> {isEditing ? "Atualizar" : "Salvar"} informações
-                    </>
-                  )}
-                </Button>
-              </div>
-            </Form>
-          </div>
-        </Card.Body>
-      </Card>
+                </Row>
+                <div className="d-grid gap-2">
+                  <Button
+                    className="mb-3"
+                    variant="success"
+                    size="lg"
+                    type="submit"
+                    disabled={loading} // Disable button when loading
+                  >
+                    {loading ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>{" "}
+                        Carregando...
+                      </>
+                    ) : (
+                      <>
+                        <Save /> {isEditing ? "Atualizar" : "Salvar"}{" "}
+                        informações
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </Form>
+            </div>
+          </Card.Body>
+        </Card>
 
-      {/* ToastContainer for displaying notifications */}
-      <ToastContainer autoClose={2000} />
-    </Container>
-  );
+        {/* ToastContainer for displaying notifications */}
+        <ToastContainer autoClose={2000} />
+      </Container>
+    );
+  }
 };
 
 export default Funcionarios;

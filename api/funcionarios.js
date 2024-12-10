@@ -1,9 +1,9 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "funcionarios/";
 
 // Função para obter todos os funcionários
-export const fetchFuncionarios = async () => {
+export const fetchFuncionarios = async (id) => {
   try {
-    const response = await fetch(BASE_URL);
+    const response = await fetch(`${BASE_URL}user/${id}`);
     if (!response.ok) {
       throw new Error("Erro ao buscar funcionários");
     }
@@ -18,6 +18,34 @@ export const fetchFuncionarios = async () => {
 export const fetchFuncionarioById = async (id) => {
   try {
     const response = await fetch(`${BASE_URL}${id}/`);
+    if (!response.ok) {
+      throw new Error("Erro ao buscar funcionário");
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Erro ao buscar funcionário:", error);
+    throw error;
+  }
+};
+
+export const fetchFuncionariosByEmpresa = async (empresaId) => {
+  try {
+    const response = await fetch(`${BASE_URL}empresa/${empresaId}/`);
+    if (!response.ok) {
+      throw new Error("Erro ao buscar funcionário");
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Erro ao buscar funcionário:", error);
+    throw error;
+  }
+};
+
+export const fetchSalarioByFuncionario = async (funId) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}${funId}/salario-meses-trabalhados`
+    );
     if (!response.ok) {
       throw new Error("Erro ao buscar funcionário");
     }

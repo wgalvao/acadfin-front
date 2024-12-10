@@ -16,6 +16,8 @@ import { fetchEmpresas, deleteEmpresa } from "@/api/empresas";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import LoadingSpinner from "sub-components/crud/Spinner";
+import { useSession } from "next-auth/react";
 
 const Empresas = () => {
   const [empresas, setEmpresas] = useState([]);
@@ -26,10 +28,12 @@ const Empresas = () => {
   const [selectedEmpresa, setSelectedEmpresa] = useState(null);
   const [empresaId, setEmpresaId] = useState(null);
 
+  const { data: session, status } = useSession({ required: true });
+
   const loadEmpresas = async () => {
     setLoading(true);
     try {
-      const data = await fetchEmpresas();
+      const data = await fetchEmpresas(session.user.pk);
       setEmpresas(data);
     } catch (err) {
       setError(err.message);
@@ -39,8 +43,16 @@ const Empresas = () => {
   };
 
   useEffect(() => {
-    loadEmpresas();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadEmpresas();
+    }
+  }, [status]);
+
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
 
   const handleDeleteClick = (id) => {
     setEmpresaId(id);

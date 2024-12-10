@@ -6,18 +6,20 @@ import { Save, User } from "lucide-react";
 import { PageHeading } from "widgets";
 import { validationSchemaCliente } from "utils/validations"; // Assume-se que validationSchemaCliente está definido para validar campos de cliente
 import ErrorMessage from "sub-components/ErrorMessage";
-import { useAuthState } from "@/lib/auth";
+
 import { fetchClienteById, createCliente, updateCliente } from "@/api/clientes";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { useSession, signOut } from "next-auth/react";
+
 const ClienteForm = () => {
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
-  const { getUserData } = useAuthState();
-  const session = getUserData();
   const [isCreating, setIsCreating] = useState(!id);
   const [loading, setLoading] = useState(false); // State for loading button
+
+  const { data: session, status } = useSession({ required: true });
 
   const [formData, setFormData] = useState({
     nome: "",
@@ -25,7 +27,7 @@ const ClienteForm = () => {
     taxa_desconto: "",
     limite_credito: "",
     observacao: "",
-    user_id: session.id,
+    user_id: "",
   });
   const [errors, setErrors] = useState({});
 
@@ -103,6 +105,15 @@ const ClienteForm = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.pk) {
+      setFormData((prevState) => ({
+        ...prevState,
+        user_id: session.user.pk, // Atualize o user_id no estado
+      }));
+    }
+  }, [session, status]);
+
   return (
     <Container fluid className="p-6">
       <PageHeading heading="Clientes" />
@@ -117,7 +128,11 @@ const ClienteForm = () => {
               <div className="py-2">
                 <Form onSubmit={handleSubmit}>
                   {/* Hidden input field for session.id */}
-                  <input type="hidden" name="user_id" value={session.id} />
+                  <input
+                    type="hidden"
+                    name="user_id"
+                    value={session?.user?.pk}
+                  />
 
                   {/* Form fields */}
                   <Form.Group className="mb-3">

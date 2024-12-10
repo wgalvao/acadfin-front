@@ -16,7 +16,7 @@ export default Edit;
 // import { PageHeading } from "widgets";
 // import { validationSchemaSindicato } from "utils/validations"; // Assume-se que validationSchemaSindicato está definido para validar campos de sindicato
 // import ErrorMessage from "sub-components/ErrorMessage";
-// import { useAuthState } from "@/lib/auth";
+// import { useSession, signOut } from "next-auth/react";
 // import {
 //   fetchSindicatoById,
 //   createSindicato,
@@ -39,7 +39,7 @@ export default Edit;
 //     nome: "",
 //     endereco: "",
 //     telefone: "",
-//     user_id: session.id,
+//     user_id: "",
 //   });
 //   const [errors, setErrors] = useState({});
 
@@ -128,7 +128,7 @@ export default Edit;
 //               <div className="py-2">
 //                 <Form onSubmit={handleSubmit}>
 //                   {/* Hidden input field for session.id */}
-//                   <input type="hidden" name="user_id" value={session.id} />
+//                   <input type="hidden" name="user_id" value={session?.user?.pk} />
 
 //                   {/* Form fields */}
 //                   <Form.Group className="mb-3">

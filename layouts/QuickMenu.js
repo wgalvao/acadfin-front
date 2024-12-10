@@ -16,13 +16,35 @@ import useMounted from "hooks/useMounted";
 
 // import { useLogOut } from "@/lib/auth";
 import { useAuth, useAuthState } from "@/lib/auth";
-import { getSession } from "@/lib/session";
+import { useSession, signOut } from "next-auth/react";
+
+import NextAuthProvider from "providers/Provider";
+import { useRouter } from "next/navigation";
 
 const QuickMenu = () => {
-  const { logOut, isAuthenticated } = useAuth();
-  const { getUserData } = useAuthState();
-  // const logOut = useLogOut();
-  const session = getUserData();
+  const { data: session, status } = useSession({ required: true });
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    // Chama a função signOut do next-auth
+    await signOut({ redirect: false });
+
+    // Redireciona para a página inicial após o logout
+    router.push("/auth/signin");
+  };
+
+  // const getUserDetails = async (useToken: boolean) => {
+  //   try {
+  //     const response = await axios({
+  //       method: "get",
+  //       url: process.env.NEXT_PUBLIC_BACKEND_URL + "auth/user/",
+  //       headers: useToken ? {Authorization: "Bearer " + session?.access_token} : {},
+  //     });
+  //     setResponse(JSON.stringify(response.data));
+  //   } catch (error) {
+  //     setResponse(error.message);
+  //   }
+  // };
 
   const hasMounted = useMounted();
   const isDesktop = useMediaQuery({
@@ -121,7 +143,7 @@ const QuickMenu = () => {
           >
             <Dropdown.Item as="div" className="px-4 pb-0 pt-2" bsPrefix=" ">
               <div className="lh-1 ">
-                <h5 className="mb-1">{session.name}</h5>
+                <h5 className="mb-1">{session?.user.username}</h5>
                 <Link href="#" className="text-inherit fs-6">
                   View my profile
                 </Link>
@@ -140,7 +162,7 @@ const QuickMenu = () => {
             <Dropdown.Item>
               <i className="fe fe-settings me-2"></i> Account Settings
             </Dropdown.Item>
-            <Dropdown.Item onClick={() => logOut()}>
+            <Dropdown.Item onClick={handleLogout}>
               <i className="fe fe-power me-2"></i>Sign Out
             </Dropdown.Item>
           </Dropdown.Menu>
@@ -213,7 +235,7 @@ const QuickMenu = () => {
           >
             <Dropdown.Item as="div" className="px-4 pb-0 pt-2" bsPrefix=" ">
               <div className="lh-1 ">
-                <h5 className="mb-1">{session.name}</h5>
+                <h5 className="mb-1">{session?.user.username}</h5>
                 <Link href="#" className="text-inherit fs-6">
                   View my profile
                 </Link>
@@ -232,7 +254,10 @@ const QuickMenu = () => {
             <Dropdown.Item>
               <i className="fe fe-settings me-2"></i> Account Settings
             </Dropdown.Item>
-            <Dropdown.Item onClick={() => logOut()}>
+            <Dropdown.Item
+              //   onClick={() => signOut({ callbackUrl: "/", redirect: true })}
+              onClick={handleLogout}
+            >
               <i className="fe fe-power me-2"></i>Sign Out
             </Dropdown.Item>
           </Dropdown.Menu>
@@ -243,7 +268,15 @@ const QuickMenu = () => {
 
   return (
     <Fragment>
-      {hasMounted && isDesktop ? <QuickMenuDesktop /> : <QuickMenuMobile />}
+      {hasMounted && isDesktop ? (
+        <NextAuthProvider>
+          <QuickMenuDesktop />
+        </NextAuthProvider>
+      ) : (
+        <NextAuthProvider>
+          <QuickMenuMobile />
+        </NextAuthProvider>
+      )}
     </Fragment>
   );
 };

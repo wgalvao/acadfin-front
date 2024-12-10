@@ -1,9 +1,9 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "jornadas/";
 
 // Função para obter todas as jornadas
-export const fetchJornadas = async () => {
+export const fetchJornadas = async (id) => {
   try {
-    const response = await fetch(BASE_URL);
+    const response = await fetch(`${BASE_URL}user/${id}`);
     if (!response.ok) {
       throw new Error("Erro ao buscar jornadas");
     }

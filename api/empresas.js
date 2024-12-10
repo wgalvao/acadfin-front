@@ -3,9 +3,9 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "empresas/";
 
 // Função para obter todos os funcionários
-export const fetchEmpresas = async () => {
+export const fetchEmpresas = async (id) => {
   try {
-    const response = await fetch(BASE_URL);
+    const response = await fetch(`${BASE_URL}user/${id}`);
     if (!response.ok) {
       throw new Error("Erro ao buscar funcionários");
     }

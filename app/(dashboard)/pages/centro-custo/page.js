@@ -16,6 +16,8 @@ import { fetchCentroCustos, deleteCentroCusto } from "@/api/centroCustos";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import LoadingSpinner from "sub-components/crud/Spinner";
+import { useSession } from "next-auth/react";
 
 const CentroCusto = () => {
   const [centroCustos, setCentroCustos] = useState([]);
@@ -25,11 +27,12 @@ const CentroCusto = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedCentroCusto, setSelectedCentroCusto] = useState(null);
   const [centroCustoId, setCentroCustoId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadCentroCustos = async () => {
     setLoading(true);
     try {
-      const data = await fetchCentroCustos();
+      const data = await fetchCentroCustos(session.user.pk);
       setCentroCustos(data);
     } catch (err) {
       setError(err.message);
@@ -39,8 +42,16 @@ const CentroCusto = () => {
   };
 
   useEffect(() => {
-    loadCentroCustos();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadCentroCustos();
+    }
+  }, [status]);
+
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
 
   const handleDeleteClick = (id) => {
     setCentroCustoId(id);
