@@ -36,6 +36,7 @@ const StatCard = ({ title, value, icon: Icon }) => (
 
 const Home = () => {
   const [stats, setStats] = useState(null);
+  const [username, setUsername] = useState(null);
   const { data: session, status } = useSession();
 
   // Buscar dados do dashboard assim que o status de autenticação mudar
@@ -46,6 +47,7 @@ const Home = () => {
         .catch((error) =>
           console.error("Erro ao buscar dados do dashboard:", error)
         );
+      setUsername(session.user.username);
     }
   }, [session, status]);
 
@@ -77,9 +79,7 @@ const Home = () => {
           <Col lg={12}>
             {/* Cabeçalho da página */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h3 className="mb-0 text-white">
-                Dashboard de {session.user.username}
-              </h3>
+              <h3 className="mb-0 text-white">Dashboard de {username}</h3>
               <Link href="#" className="btn btn-white">
                 ...
               </Link>
