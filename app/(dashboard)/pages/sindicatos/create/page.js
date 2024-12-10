@@ -7,7 +7,7 @@ import { Save, Briefcase } from "lucide-react";
 import { PageHeading } from "widgets";
 import { validationSchemaSindicato } from "utils/validations"; // Assume-se que validationSchemaSindicato está definido para validar campos de sindicato
 import ErrorMessage from "sub-components/ErrorMessage";
-import { useAuthState } from "@/lib/auth";
+import { useSession, signOut } from "next-auth/react";
 import {
   fetchSindicatoById,
   createSindicato,
@@ -21,8 +21,7 @@ import { resolve } from "styled-jsx/css";
 const Home = () => {
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
-  const { getUserData } = useAuthState();
-  const session = getUserData();
+  const { data: session, status } = useSession({ required: true });
   const [isCreating, setIsCreating] = useState(!id);
   const [loading, setLoading] = useState(false); // State for loading button
 
@@ -30,7 +29,7 @@ const Home = () => {
     nome: "",
     endereco: "",
     telefone: "",
-    user_id: session.id,
+    user_id: "",
   });
   const [errors, setErrors] = useState({});
 
@@ -105,6 +104,15 @@ const Home = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.pk) {
+      setFormData((prevState) => ({
+        ...prevState,
+        user_id: session.user.pk, // Atualize o user_id no estado
+      }));
+    }
+  }, [session, status]);
+
   return (
     <Container fluid className="p-6">
       <PageHeading heading="Sindicatos" />
@@ -119,7 +127,11 @@ const Home = () => {
               <div className="py-2">
                 <Form onSubmit={handleSubmit}>
                   {/* Hidden input field for session.id */}
-                  <input type="hidden" name="user_id" value={session.id} />
+                  <input
+                    type="hidden"
+                    name="user_id"
+                    value={session?.user?.pk}
+                  />
 
                   {/* Form fields */}
                   <Form.Group className="mb-3">

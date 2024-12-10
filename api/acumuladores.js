@@ -1,9 +1,9 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "acumuladores/";
 
 // Função para obter todos os Acumuladores
-export const fetchAcumuladores = async () => {
+export const fetchAcumuladores = async (id) => {
   try {
-    const response = await fetch(BASE_URL);
+    const response = await fetch(`${BASE_URL}user/${id}`);
     if (!response.ok) {
       throw new Error("Erro ao buscar acumuladores");
     }

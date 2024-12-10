@@ -2,7 +2,6 @@
 
 import FornecedorForm from "../../create/page";
 
-const Edit = () => {
+export default function Edit() {
   return <FornecedorForm />;
-};
-export default Edit;
+}

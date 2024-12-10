@@ -16,6 +16,8 @@ import { fetchPlanoContas, deletePlanoConta } from "@/api/planoContas";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import LoadingSpinner from "sub-components/crud/Spinner";
+import { useSession } from "next-auth/react";
 
 const PlanoContas = () => {
   const [planoContas, setPlanoContas] = useState([]);
@@ -25,11 +27,12 @@ const PlanoContas = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedPlanoConta, setSelectedPlanoConta] = useState(null);
   const [planoContaId, setPlanoContaId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadPlanoContas = async () => {
     setLoading(true);
     try {
-      const data = await fetchPlanoContas();
+      const data = await fetchPlanoContas(session.user.pk);
       setPlanoContas(data);
     } catch (err) {
       setError(err.message);
@@ -39,8 +42,16 @@ const PlanoContas = () => {
   };
 
   useEffect(() => {
-    loadPlanoContas();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadPlanoContas();
+    }
+  }, [status]);
+
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
 
   const handleDeleteClick = (id) => {
     setPlanoContaId(id);

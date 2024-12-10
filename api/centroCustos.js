@@ -1,9 +1,9 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "centro-de-custos/";
 
 // Função para obter todos os CentroCustos
-export const fetchCentroCustos = async () => {
+export const fetchCentroCustos = async (id) => {
   try {
-    const response = await fetch(BASE_URL);
+    const response = await fetch(`${BASE_URL}user/${id}`);
     if (!response.ok) {
       throw new Error("Erro ao buscar CentroCusto");
     }

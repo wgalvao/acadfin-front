@@ -1,9 +1,9 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL + "cfops/";
 
 // Função para obter todos os CFOPs
-export const fetchCfops = async () => {
+export const fetchCfops = async (id) => {
   try {
-    const response = await fetch(BASE_URL);
+    const response = await fetch(`${BASE_URL}user/${id}`);
     if (!response.ok) {
       throw new Error("Erro ao buscar CFOPs");
     }

@@ -16,6 +16,8 @@ import { fetchFuncoes, deleteFuncao } from "@/api/funcoes";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import LoadingSpinner from "sub-components/crud/Spinner";
+import { useSession } from "next-auth/react";
 
 const Funcoes = () => {
   const [funcoes, setFuncoes] = useState([]);
@@ -25,11 +27,12 @@ const Funcoes = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedFuncao, setSelectedFuncao] = useState(null);
   const [funcaoId, setFuncaoId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadFuncoes = async () => {
     setLoading(true);
     try {
-      const data = await fetchFuncoes();
+      const data = await fetchFuncoes(session.user.pk);
       setFuncoes(data);
     } catch (err) {
       setError(err.message);
@@ -39,8 +42,16 @@ const Funcoes = () => {
   };
 
   useEffect(() => {
-    loadFuncoes();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadFuncoes();
+    }
+  }, [status]);
+
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
 
   const handleDeleteClick = (id) => {
     setFuncaoId(id);

@@ -50,6 +50,10 @@ export const authOptions = {
       },
     }),
   ],
+  pages: {
+    signIn: "/auth/signin",
+    signOut: "/auth/signin",
+  },
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       if (!SIGN_IN_PROVIDERS.includes(account.provider)) return false;

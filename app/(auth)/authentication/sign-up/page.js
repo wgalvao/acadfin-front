@@ -48,7 +48,7 @@ const SignUp = () => {
 
       // Tenta registrar o usuário
       const response = await registerUser(formData);
-
+      console.log(response);
       // Check if the response contains errors
       if (response && response.errors) {
         const backendErrors = {};
@@ -60,9 +60,10 @@ const SignUp = () => {
         return;
       }
 
+      if (response.ok) {
+        router.push("/");
+      }
       // If successful, redirect to the home page
-      router.push("/");
-      console.log("era pra ter ido");
     } catch (error) {
       // Handle unexpected errors
       setErrors({ general: error.message });
@@ -124,7 +125,7 @@ const SignUp = () => {
                   <Form.Control
                     type="text"
                     name="username"
-                    placeholder="Nome de Usuário"
+                    placeholder="Informe tal como o @ do instagram. Sem acentos ou espaços"
                     value={formData.username}
                     onChange={handleInputChange}
                     isInvalid={!!errors.username}

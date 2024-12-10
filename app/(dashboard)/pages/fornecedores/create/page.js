@@ -6,7 +6,6 @@ import { Save, User } from "lucide-react";
 import { PageHeading } from "widgets";
 import { validationSchemaFornecedor } from "utils/validations"; // Assume-se que validationSchemaFornecedor está definido para validar campos de fornecedor
 import ErrorMessage from "sub-components/ErrorMessage";
-import { useAuthState } from "@/lib/auth";
 import {
   fetchFornecedorById,
   createFornecedor,
@@ -14,20 +13,21 @@ import {
 } from "@/api/fornecedores";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useSession } from "next-auth/react";
 
 const FornecedorForm = () => {
   const { id } = useParams(); // Captura o ID da URL
   const router = useRouter();
-  const { getUserData } = useAuthState();
-  const session = getUserData();
   const [isCreating, setIsCreating] = useState(!id);
   const [loading, setLoading] = useState(false); // State for loading button
 
+  const { data: session, status } = useSession({ required: true });
+
   const [formData, setFormData] = useState({
-    pessoa_id: "",
+    nome: "",
     desde: "",
     observacao: "",
-    user_id: session.id,
+    user_id: "",
   });
   const [errors, setErrors] = useState({});
 
@@ -100,6 +100,15 @@ const FornecedorForm = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.pk) {
+      setFormData((prevState) => ({
+        ...prevState,
+        user_id: session.user.pk, // Atualize o user_id no estado
+      }));
+    }
+  }, [session, status]);
+
   return (
     <Container fluid className="p-6">
       <PageHeading heading="Fornecedores" />
@@ -116,20 +125,24 @@ const FornecedorForm = () => {
               <div className="py-2">
                 <Form onSubmit={handleSubmit}>
                   {/* Hidden input field for session.id */}
-                  <input type="hidden" name="user_id" value={session.id} />
+                  <input
+                    type="hidden"
+                    name="user_id"
+                    value={session?.user?.pk}
+                  />
 
                   {/* Form fields */}
                   <Form.Group className="mb-3">
                     <Form.Label>Pessoa</Form.Label>
                     <Form.Control
-                      type="number"
-                      name="pessoa_id"
+                      type="text"
+                      name="nome"
                       placeholder="Digite o nome da pessoa"
-                      value={formData.pessoa_id}
+                      value={formData.nome}
                       onChange={handleChange}
-                      isInvalid={!!errors.pessoa_id}
+                      isInvalid={!!errors.nome}
                     />
-                    <ErrorMessage message={errors.pessoa_id} />
+                    <ErrorMessage message={errors.nome} />
                   </Form.Group>
 
                   <Form.Group className="mb-3">

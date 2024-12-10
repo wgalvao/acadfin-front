@@ -16,6 +16,9 @@ import { fetchAliquotas, deleteAliquota } from "@/api/aliquotas";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import LoadingSpinner from "sub-components/crud/Spinner";
+
+import { useSession } from "next-auth/react";
 
 const Aliquotas = () => {
   const [aliquotas, setAliquotas] = useState([]);
@@ -25,11 +28,12 @@ const Aliquotas = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedAliquota, setSelectedAliquota] = useState(null);
   const [aliquotaId, setAliquotaId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadAliquotas = async () => {
     setLoading(true);
     try {
-      const data = await fetchAliquotas();
+      const data = await fetchAliquotas(session.user.pk);
       setAliquotas(data);
     } catch (err) {
       setError(err.message);
@@ -39,8 +43,16 @@ const Aliquotas = () => {
   };
 
   useEffect(() => {
-    loadAliquotas();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadAliquotas();
+    }
+  }, [status]);
+
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
 
   const handleDeleteClick = (id) => {
     setAliquotaId(id);

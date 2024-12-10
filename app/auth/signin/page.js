@@ -6,10 +6,10 @@ import Link from "next/link";
 import { useState } from "react";
 // import hooks
 import useMounted from "hooks/useMounted";
-import { authenticateAndFetchData } from "@/lib/auth";
 import { useRouter } from "next/navigation"; // Import useRouter for navigation
 
 import { signIn } from "next-auth/react";
+
 const SignIn = () => {
   const router = useRouter();
   const hasMounted = useMounted();
@@ -24,38 +24,21 @@ const SignIn = () => {
     setError(""); // Reset error message
 
     try {
-      // Passo 1: Autenticação e obtenção dos tokens
-      const { access, refresh, id, name } = await authenticateAndFetchData(
-        username,
-        password
-      );
+      const result = await signIn("credentials", {
+        username: username,
+        password: password,
+        redirect: false,
+        callbackUrl: "/",
+      });
 
-      // // Armazena tokens e dados do usuário nos cookies com configurações de segurança
-      // Cookies.set("accessToken", access, {
-      //   secure: true,
-      //   sameSite: "Strict",
-      //   expires: 1,
-      // }); // Expira em 1 dia
-      // Cookies.set("refreshToken", refresh, {
-      //   secure: true,
-      //   sameSite: "Strict",
-      //   expires: 7,
-      // }); // Expira em 7 dias
-      // Cookies.set("userId", id, {
-      //   secure: true,
-      //   sameSite: "Strict",
-      //   expires: 7,
-      // }); // Expira em 7 dia
-      // Cookies.set("userName", name, {
-      //   secure: true,
-      //   sameSite: "Strict",
-      //   expires: 7,
-      // }); // Expira em 7 dias
-      // // Optional: Redirect to the dashboard after successful login
-      router.push("/");
+      if (result.error) {
+        setError("Usuário ou senha inválidos. Por favor, tente novamente.");
+      } else if (result.ok) {
+        router.push("/");
+      }
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "An unexpected error occurred"
+        error instanceof Error ? error.message : "Ocorreu um erro inesperado"
       );
     } finally {
       setIsLoading(false);
@@ -78,7 +61,6 @@ const SignIn = () => {
                   alt=""
                 />
               </Link>
-              <Button onClick={() => signIn()}></Button>
               <p className="mb-6">
                 Por favor, entre com suas credenciais de acesso.
               </p>
@@ -144,7 +126,7 @@ const SignIn = () => {
                         href="/authentication/forget-password"
                         className="text-inherit fs-5"
                       >
-                        Esqueci minha senha?
+                        {/* Esqueci minha senha? */}
                       </Link>
                     </div>
                   </div>

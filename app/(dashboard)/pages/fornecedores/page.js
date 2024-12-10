@@ -16,6 +16,8 @@ import { fetchFornecedores, deleteFornecedor } from "@/api/fornecedores";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import LoadingSpinner from "sub-components/crud/Spinner";
+import { useSession } from "next-auth/react";
 
 const Fornecedores = () => {
   const [fornecedores, setFornecedores] = useState([]);
@@ -25,11 +27,12 @@ const Fornecedores = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedFornecedor, setSelectedFornecedor] = useState(null);
   const [fornecedorId, setFornecedorId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadFornecedores = async () => {
     setLoading(true);
     try {
-      const data = await fetchFornecedores();
+      const data = await fetchFornecedores(session.user.pk);
       setFornecedores(data);
     } catch (err) {
       setError(err.message);
@@ -37,11 +40,17 @@ const Fornecedores = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    loadFornecedores();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadFornecedores();
+    }
+  }, [status]);
 
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
   const handleDeleteClick = (id) => {
     setFornecedorId(id);
     setShowDeleteModal(true);
@@ -109,7 +118,7 @@ const Fornecedores = () => {
                           }}
                           onClick={() => handleDetailsClick(fornecedor)}
                         >
-                          {fornecedor.pessoa_id}
+                          {fornecedor.nome}
                         </span>
                       </td>
                       <td>{new Date(fornecedor.desde).toLocaleDateString()}</td>
@@ -167,7 +176,7 @@ const ModalDetails = ({ show, onHide, fornecedor }) => {
         {fornecedor ? (
           <div>
             <p>
-              <strong>Pessoa:</strong> {fornecedor.pessoa_id}
+              <strong>Pessoa:</strong> {fornecedor.nome}
             </p>
             <p>
               <strong>Desde:</strong>{" "}

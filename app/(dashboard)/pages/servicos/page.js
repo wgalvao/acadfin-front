@@ -16,6 +16,8 @@ import { fetchServicos, deleteServico } from "@/api/servicos";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import LoadingSpinner from "sub-components/crud/Spinner";
+import { useSession } from "next-auth/react";
 
 const Servicos = () => {
   const [servicos, setServicos] = useState([]);
@@ -25,11 +27,12 @@ const Servicos = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedServico, setSelectedServico] = useState(null);
   const [servicoId, setServicoId] = useState(null);
+  const { data: session, status } = useSession({ required: true });
 
   const loadServicos = async () => {
     setLoading(true);
     try {
-      const data = await fetchServicos();
+      const data = await fetchServicos(session.user.pk);
       setServicos(data);
     } catch (err) {
       setError(err.message);
@@ -39,8 +42,16 @@ const Servicos = () => {
   };
 
   useEffect(() => {
-    loadServicos();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadServicos();
+    }
+  }, [status]);
+
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
 
   const handleDeleteClick = (id) => {
     setServicoId(id);

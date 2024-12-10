@@ -16,6 +16,8 @@ import { fetchCfops, deleteCfop } from "@/api/cfops";
 
 import Header from "sub-components/crud/Header";
 import ModalDelete from "sub-components/crud/ModalDelete";
+import LoadingSpinner from "sub-components/crud/Spinner";
+import { useSession } from "next-auth/react";
 
 const Cfops = () => {
   const [cfops, setCfops] = useState([]);
@@ -26,10 +28,12 @@ const Cfops = () => {
   const [selectedCfop, setSelectedCfop] = useState(null);
   const [cfopId, setCfopId] = useState(null);
 
+  const { data: session, status } = useSession({ required: true });
+
   const loadCfops = async () => {
     setLoading(true);
     try {
-      const data = await fetchCfops();
+      const data = await fetchCfops(session.user.pk);
       setCfops(data);
     } catch (err) {
       setError(err.message);
@@ -39,8 +43,16 @@ const Cfops = () => {
   };
 
   useEffect(() => {
-    loadCfops();
-  }, []);
+    // Só carrega os dados se a sessão estiver autenticada
+    if (status === "authenticated") {
+      loadCfops();
+    }
+  }, [status]);
+
+  if (status === "loading") {
+    // return <p>Carregando sessão...</p>;
+    return <LoadingSpinner />;
+  }
 
   const handleDeleteClick = (id) => {
     setCfopId(id);
