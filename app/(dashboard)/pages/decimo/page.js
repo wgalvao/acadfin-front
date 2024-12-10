@@ -1,12 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Row, Col, Card, Form, Button, InputGroup } from "react-bootstrap";
+import {
+  Row,
+  Col,
+  Card,
+  Form,
+  Button,
+  InputGroup,
+  Alert,
+} from "react-bootstrap";
 import { fetchEmpresas } from "@/api/empresas";
 import {
   fetchFuncionariosByEmpresa,
   fetchSalarioByFuncionario,
 } from "@/api/funcionarios";
+import { calculateDecimoTerceiro } from "@/api/calculo"; // Adicione esta importação
 import { useSession } from "next-auth/react";
 import LoadingSpinner from "sub-components/crud/Spinner";
 
@@ -44,6 +53,7 @@ const DecimoTerceiro = () => {
   const [isIntegral, setIsIntegral] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resultadoCalculo, setResultadoCalculo] = useState(null);
 
   const { data: session, status } = useSession();
 
@@ -138,15 +148,26 @@ const DecimoTerceiro = () => {
     setSelectedFuncionario(e.target.value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aqui você pode implementar a lógica para calcular o décimo terceiro
-    console.log("Empresa selecionada:", selectedEmpresa);
-    console.log("Funcionário selecionado:", selectedFuncionario);
-    console.log("Salário:", salario);
-    console.log("Taxa Percentual:", taxaPercentual);
-    console.log("Meses Trabalhados:", mesesTrabalhados);
-    console.log("É integral?", isIntegral);
+    setLoading(true);
+    setError("");
+    setResultadoCalculo(null);
+
+    try {
+      const result = await calculateDecimoTerceiro({
+        salario,
+        mesesTrabalhados,
+        taxaPercentual,
+        isIntegral,
+      });
+      console.log(result);
+      setResultadoCalculo(result);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (session) {
@@ -162,7 +183,7 @@ const DecimoTerceiro = () => {
                   terceiro.
                 </p>
               </div>
-              {error && <p className="text-danger">{error}</p>}
+              {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
                   <Form.Label>Empresa</Form.Label>
@@ -205,6 +226,7 @@ const DecimoTerceiro = () => {
                       <InputGroup>
                         <InputGroup.Text>R$</InputGroup.Text>
                         <Form.Control
+                          disabled={true}
                           type="number"
                           value={salario}
                           onChange={(e) => setSalario(e.target.value)}
@@ -217,6 +239,7 @@ const DecimoTerceiro = () => {
                       <Form.Label>Taxa Percentual</Form.Label>
                       <InputGroup>
                         <Form.Control
+                          disabled={true}
                           type="number"
                           value={taxaPercentual}
                           onChange={(e) => setTaxaPercentual(e.target.value)}
@@ -260,13 +283,48 @@ const DecimoTerceiro = () => {
                     </Form.Group>
 
                     <div className="d-grid">
-                      <Button variant="primary" type="submit">
-                        Calcular
+                      <Button
+                        variant="primary"
+                        type="submit"
+                        disabled={loading}
+                      >
+                        {loading ? "Calculando..." : "Calcular"}
                       </Button>
                     </div>
                   </>
                 )}
               </Form>
+
+              {resultadoCalculo && (
+                <Alert variant="success" className="mt-4">
+                  <h4>Resultado do Cálculo</h4>
+                  {isIntegral ? (
+                    <>
+                      <p>
+                        Valor do Desconto: R${" "}
+                        {resultadoCalculo.valor_do_desconto}
+                      </p>
+                      <p>
+                        Valor a Receber Integral: R${" "}
+                        {resultadoCalculo.valor_a_receber_integral}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      {/* <p>Valor do Desconto da Primeira Parcela: R$ {resultadoCalculo.descontoPrimeiraParcela}</p> */}
+                      <p>
+                        Valor da Primeira Parcela: R${" "}
+                        {resultadoCalculo.valor_da_primeira_parcela}
+                      </p>
+                      {/* <p>Valor do Desconto da Segunda Parcela: R$ {resultadoCalculo.descontoSegundaParcela}</p> */}
+                      <p>
+                        Valor da Segunda Parcela: R${" "}
+                        {resultadoCalculo.valor_da_segunda_parcela}
+                      </p>
+                    </>
+                  )}
+                </Alert>
+              )}
             </Card.Body>
           </Card>
         </Col>
