@@ -7,10 +7,6 @@ import Link from "next/link";
 import { Briefcase } from "react-bootstrap-icons";
 import { useSession } from "next-auth/react";
 
-// Importações de componentes personalizados
-import { StatRightTopIcon } from "widgets";
-import { ActiveProjects, Teams, TasksPerformance } from "sub-components";
-
 // Importação de dados
 import { fetchDash } from "api/dashboard";
 
@@ -39,20 +35,26 @@ const Home = () => {
   const [username, setUsername] = useState(null);
   const { data: session, status } = useSession();
 
-  // Buscar dados do dashboard assim que o status de autenticação mudar
+  // Buscar dados do dashboard
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.pk) {
-      fetchDash(session.user.pk)
-        .then(setStats)
-        .catch((error) =>
-          console.error("Erro ao buscar dados do dashboard:", error)
-        );
-      setUsername(session.user.username);
-    }
+    const fetchData = async () => {
+      if (status === "authenticated" && session?.user?.pk) {
+        try {
+          const data = await fetchDash(session.user.pk);
+          setStats(data);
+          setUsername(session.user.username);
+        } catch (error) {
+          console.error("Erro ao buscar dados do dashboard:", error);
+          setStats({}); // Evitar spinner infinito
+        }
+      }
+    };
+
+    fetchData();
   }, [session, status]);
 
   // Verifica se os dados ainda estão sendo carregados
-  if (!stats) {
+  if (status === "loading" || (status === "authenticated" && stats === null)) {
     return (
       <Container fluid className="mt-n22 px-6">
         <Row>
@@ -71,13 +73,27 @@ const Home = () => {
     );
   }
 
+  // Renderiza mensagem de erro ou conteúdo vazio
+  if (status === "authenticated" && stats && Object.keys(stats).length === 0) {
+    return (
+      <Container fluid className="mt-n22 px-6">
+        <Row>
+          <Col>
+            <div className="text-center">
+              <p>Não há dados disponíveis para exibir.</p>
+            </div>
+          </Col>
+        </Row>
+      </Container>
+    );
+  }
+
   return (
     <Fragment>
       <div className="bg-primary pt-10 pb-21"></div>
       <Container fluid className="mt-n22 px-6">
         <Row>
           <Col lg={12}>
-            {/* Cabeçalho da página */}
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h3 className="mb-0 text-white">Dashboard de {username}</h3>
               <Link href="#" className="btn btn-white">
@@ -108,18 +124,6 @@ const Home = () => {
             icon={Briefcase}
           />
         </Row>
-
-        {/* Seções adicionais comentadas, podem ser descomentadas conforme necessário */}
-        {/* <ActiveProjects /> */}
-
-        {/* <Row className="my-6">
-          <Col xl={4} lg={12} md={12} xs={12} className="mb-6 mb-xl-0">
-            <TasksPerformance />
-          </Col>
-          <Col xl={8} lg={12} md={12} xs={12}>
-            <Teams />
-          </Col>
-        </Row> */}
       </Container>
     </Fragment>
   );
